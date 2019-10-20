@@ -1,0 +1,16 @@
+[package]
+name = "mandelbrot_gen"
+version = "0.1.0"
+authors = ["Alvaro Sanchez <a.sanchez@smartreporting.de>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+num = "0.1.39"
+image = "0.14.0"
+ndarray = "0.10.0"
+docopt = "1.1.0"
+serde = "1.0"
+serde_derive = "1.0"
+rendering = { path = "../../rendering" }
