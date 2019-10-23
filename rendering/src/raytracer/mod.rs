@@ -57,7 +57,7 @@ pub mod canvas {
             let param_y: f64 = 0.5 * (dir[1] + 1.0);
 
             let white = arr1(&[1.0, 1.0, 1.0]);
-            let blue = arr1(&[0.5, 0.7, 1.0]);
+            let blue = arr1(&[0.4, 0.5, 1.0]);
             let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
 
             image::Rgba::<u8>([
@@ -86,8 +86,8 @@ pub mod canvas {
                     direction: arr1(&[1.0, 1.0, 1.0, 1.0]),
                 };
 
-                ray.origin = point_ndc - ray.origin.clone();
-                ray.origin.dot(&ray.origin).sqrt()
+                ray.direction = point_ndc - ray.origin.clone();
+                //ray.origin.dot(&ray.origin).sqrt()
 
                 *pixel = self.background_color(&ray); 
             }

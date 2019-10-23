@@ -32,7 +32,7 @@ mod tests {
     fn render_background() {
         let canvas = crate::raytracer::canvas::Canvas {
             width: 256,
-            height: 128,
+            height: 192,
         };
 
         let image = canvas.render_background();
