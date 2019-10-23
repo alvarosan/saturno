@@ -50,7 +50,23 @@ pub mod canvas {
             ])
         }
 
-        fn background_color() {}
+        pub fn background_color(&self,
+            ray: &crate::raytracer::ray::Ray,
+        ) -> image::Rgba::<u8> {
+            let dir = ray.direction.clone();
+            let param_y: f64 = 0.5 * (dir[1] + 1.0);
+
+            let white = arr1(&[1.0, 1.0, 1.0]);
+            let blue = arr1(&[0.5, 0.7, 1.0]);
+            let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
+
+            image::Rgba::<u8>([
+                color[0] as u8,
+                color[1] as u8,
+                color[2] as u8,
+                255,
+            ])
+        }
 
         pub fn render_background(&self) -> image::RgbaImage {
             let mut image = image::RgbaImage::new(self.width, self.height);
@@ -64,12 +80,19 @@ pub mod canvas {
                 // Set Z to where the image plane is located
                 println!("Image_p / NDC_p: {} / {}", &point_image, &point_ndc);
 
+                // TODO Add default values, perhaps add a vec3 , vec4 classes
+                let mut ray = crate::raytracer::ray::Ray {
+                    origin: arr1(&[0.0, 0.0, 0.0, 0.0]),
+                    direction: arr1(&[1.0, 1.0, 1.0, 1.0]),
+                };
 
-                *pixel = blue;
+                ray.origin = point_ndc - ray.origin.clone();
+                ray.origin.dot(&ray.origin).sqrt()
+
+                *pixel = self.background_color(&ray); 
             }
             image
         }
-
     }
 
 }
