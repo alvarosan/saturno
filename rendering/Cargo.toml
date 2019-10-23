@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 num = "0.1.39"
 image = "0.14.0"
-ndarray = "0.10.0"
+ndarray = "0.12.0"

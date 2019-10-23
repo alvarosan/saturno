@@ -1,5 +1,5 @@
 extern crate image;
-extern crate ndarray;
+//extern crate ndarray;
 extern crate num;
 
 use ndarray::{arr1, arr2};

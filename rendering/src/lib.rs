@@ -8,11 +8,6 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-
-    #[test]
     fn point_at_parameter() {
         let ray = crate::raytracer::ray::Ray {
             origin: arr1(&[0.5, 0.6, 0.7, 1.0]),
