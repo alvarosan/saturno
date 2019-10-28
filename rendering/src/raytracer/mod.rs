@@ -1,4 +1,4 @@
-pub mod commmon {
+pub mod common {
     use ndarray::{Array1, ArrayView1};
 
     pub struct vec4 {
@@ -23,7 +23,7 @@ pub mod commmon {
             x.dot(&x).sqrt()
         }
 
-        fn normalize(mut x: Array1<f64>) -> Array1<f64> {
+        pub fn normalize(mut x: Array1<f64>) -> Array1<f64> {
             let norm: f64 = vec4::l2_norm(x.view());
             x.mapv_inplace(|e| e/norm);
             x
@@ -62,21 +62,22 @@ pub mod canvas {
          *  Transform image pixel (i,j) to image plane coordinates (u, v).
          */
         fn image_to_ndc(&self) -> Array2<f64> {
-            //let camera_center = arr1(&[0.0, 0.0, 0.0, 1.0]);
             let lower_left_ndc = arr1(&[-2.0, -1.0, -1.0, 1.0]);
             let upper_right_ndc = arr1(&[2.0, 1.0, -1.0, 1.0]);
             let range = upper_right_ndc - lower_left_ndc.clone();
+            let steps: f64 = 100.0;
 
             let spacing = arr1(&[
                                range[0] / self.width as f64,
                                range[1] / self.height as f64,
+                               range[2] / steps as f64,
             ]);
 
             let transf = arr2(&[
-                         [spacing[0], 0.0, 0.0, lower_left_ndc[0]],
-                         [0.0, spacing[1], 0.0, lower_left_ndc[1]],
-                         [0.0, 0.0, 1.0, lower_left_ndc[2]],
-                         [0.0, 0.0, 0.0, 1.0], ]);
+                              [spacing[0], 0.0, 0.0, lower_left_ndc[0]],
+                              [0.0, spacing[1], 0.0, lower_left_ndc[1]],
+                              [0.0, 0.0, spacing[2], lower_left_ndc[2]],
+                              [0.0, 0.0, 0.0, 1.0], ]);
 
             let flip_y = arr2(&[
                               [1.0, 0.0, 0.0, 0.0],
@@ -99,7 +100,7 @@ pub mod canvas {
             let param_y: f64 = 0.5 * (dir[1] + 1.0);
 
             let white = arr1(&[0.8, 0.8, 0.8]);
-            let blue = arr1(&[0.1, 0.2, 1.0]);
+            let blue = arr1(&[0.1, 0.2, 0.65]);
             let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
 
             image::Rgba::<u8>([
@@ -114,26 +115,88 @@ pub mod canvas {
             let mut image = image::RgbaImage::new(self.width, self.height);
             let transf = self.image_to_ndc();
 
+            let sph = crate::raytracer::sphere::Sphere {
+                center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+                radius: 0.5,
+                color: image::Rgba::<u8>([255, 0, 0, 255]),
+            };
+
             for (x, y, pixel) in image.enumerate_pixels_mut() {
-                let point_image = arr1(&[x as f64, y as f64, 1.0, 1.0]);
+                let point_image = arr1(&[x as f64, y as f64, 0.0, 1.0]);
                 let point_ndc = transf.dot(&point_image);
 
                 // Set Z to where the image plane is located
-                println!("Image_p / NDC_p: {} / {}", &point_image, &point_ndc);
+                //println!("Image_p / NDC_p: {} / {}", &point_image, &point_ndc);
 
                 // TODO Add default values, perhaps add a vec3 , vec4 classes
                 let mut ray = crate::raytracer::ray::Ray {
-                    origin: arr1(&[0.0, 0.0, 0.0, 0.0]),
-                    direction: arr1(&[1.0, 1.0, 1.0, 1.0]),
+                    // Camera center is (0, 0, 0)
+                    origin: arr1(&[0.0, 0.0, 0.0, 1.0]),
+                    direction: arr1(&[1.0, 1.0, 1.0, 0.0]),
                 };
 
                 ray.direction = point_ndc - ray.origin.clone();
-                //ray.origin.dot(&ray.origin).sqrt()
+                //println!("ray.dir: {}", &ray.direction);
 
-                *pixel = self.background_color(&ray);
+                //let nor = crate::raytracer::common::vec4::normalize(
+                //    arr1(&[ray.direction[0], ray.direction[1], ray.direction[2]]));
+                //ray.direction = arr1(&[nor[0], nor[1], nor[2], 0.0]);
+
+                let sphere_color = sph.render(&ray);
+                if (sphere_color[3] == 255) {
+                    *pixel = sphere_color;
+                } else {
+                    *pixel = self.background_color(&ray);
+                }
+
+
             }
             image
         }
     }
 
+}
+
+pub mod sphere {
+    use ndarray::{Array1};
+
+    pub struct Sphere {
+        pub center: Array1<f64>,
+        pub radius: f64,
+        pub color: image::Rgba::<u8>,
+    }
+
+    impl Sphere {
+        pub fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba::<u8> {
+            if (self.is_hit(ray)) {
+                return self.color.clone();
+            }
+
+            image::Rgba::<u8>([0, 0, 0, 0])
+        }
+
+        /**
+         * Solving the sphere equation analitically, leads to real solutions
+         * (hit front / back) or a complex solution (miss).
+         *
+         * vec{radius} = vec{Ray} - vec{Center}
+         *           X = Y
+         *   dot(X, X) = dot(Y, Y)
+         *
+         * Substitute Ray = Origin + t * Dir and solve for t ...
+         *
+         * t^2 dot(Dir, Dir) + 2*t*dot(Dir, Orig - Cent) +
+         *      dot(Orig-Cent, Orig-Cent) = radius^2
+         *
+         */
+        fn is_hit(&self, ray: &crate::raytracer::ray::Ray) -> bool {
+            let oc = ray.origin.clone() - self.center.clone();
+            let a = ray.direction.dot(&ray.direction);
+            let b = 2.0 * oc.dot(&ray.direction);
+            let c = oc.dot(&oc) - self.radius * self.radius;
+            let discriminant = b * b - 4.0 * a * c;
+
+            discriminant > 0.0
+        }
+    }
 }
