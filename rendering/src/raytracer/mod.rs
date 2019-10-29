@@ -6,17 +6,35 @@ pub mod common {
     }
 
     impl vec4 {
-        pub fn x(&self) -> f64 { self.data[0] }
-        pub fn y(&self) -> f64 { self.data[1] }
-        pub fn z(&self) -> f64 { self.data[2] }
-        pub fn w(&self) -> f64 { self.data[3] }
-        pub fn r(&self) -> f64 { self.data[0] }
-        pub fn g(&self) -> f64 { self.data[1] }
-        pub fn b(&self) -> f64 { self.data[2] }
-        pub fn a(&self) -> f64 { self.data[3] }
+        pub fn x(&self) -> f64 {
+            self.data[0]
+        }
+        pub fn y(&self) -> f64 {
+            self.data[1]
+        }
+        pub fn z(&self) -> f64 {
+            self.data[2]
+        }
+        pub fn w(&self) -> f64 {
+            self.data[3]
+        }
+        pub fn r(&self) -> f64 {
+            self.data[0]
+        }
+        pub fn g(&self) -> f64 {
+            self.data[1]
+        }
+        pub fn b(&self) -> f64 {
+            self.data[2]
+        }
+        pub fn a(&self) -> f64 {
+            self.data[3]
+        }
 
         pub fn normalized(&self) -> vec4 {
-            vec4{ data: vec4::normalize(self.data.clone()) }
+            vec4 {
+                data: vec4::normalize(self.data.clone()),
+            }
         }
 
         fn l2_norm(x: ArrayView1<f64>) -> f64 {
@@ -25,7 +43,7 @@ pub mod common {
 
         pub fn normalize(mut x: Array1<f64>) -> Array1<f64> {
             let norm: f64 = vec4::l2_norm(x.view());
-            x.mapv_inplace(|e| e/norm);
+            x.mapv_inplace(|e| e / norm);
             x
         }
     }
@@ -47,6 +65,7 @@ pub mod ray {
 }
 
 pub mod canvas {
+    use crate::raytracer::actor::Renderable;
     use ndarray::{arr1, arr2, Array2};
 
     extern crate image;
@@ -57,7 +76,6 @@ pub mod canvas {
     }
 
     impl Canvas {
-
         /**
          *  Transform image pixel (i,j) to image plane coordinates (u, v).
          */
@@ -68,22 +86,24 @@ pub mod canvas {
             let steps: f64 = 100.0;
 
             let spacing = arr1(&[
-                               range[0] / self.width as f64,
-                               range[1] / self.height as f64,
-                               range[2] / steps as f64,
+                range[0] / self.width as f64,
+                range[1] / self.height as f64,
+                range[2] / steps as f64,
             ]);
 
             let transf = arr2(&[
-                              [spacing[0], 0.0, 0.0, lower_left_ndc[0]],
-                              [0.0, spacing[1], 0.0, lower_left_ndc[1]],
-                              [0.0, 0.0, spacing[2], lower_left_ndc[2]],
-                              [0.0, 0.0, 0.0, 1.0], ]);
+                [spacing[0], 0.0, 0.0, lower_left_ndc[0]],
+                [0.0, spacing[1], 0.0, lower_left_ndc[1]],
+                [0.0, 0.0, spacing[2], lower_left_ndc[2]],
+                [0.0, 0.0, 0.0, 1.0],
+            ]);
 
             let flip_y = arr2(&[
-                              [1.0, 0.0, 0.0, 0.0],
-                              [0.0, -1.0, 0.0, 0.0],
-                              [0.0, 0.0, 1.0, 0.0],
-                              [0.0, 0.0, 0.0, 1.0],  ]);
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, -1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]);
 
             flip_y.dot(&transf)
         }
@@ -93,9 +113,10 @@ pub mod canvas {
          *  Use LERP (linear interpolation), to generate a gradient on the
          *  y-direction (similar to front-to-back blending).
          */
-        pub fn background_color(&self,
-                                ray: &crate::raytracer::ray::Ray,
-                                ) -> image::Rgba::<u8> {
+        pub fn background_color(
+            &self,
+            ray: &crate::raytracer::ray::Ray,
+        ) -> image::Rgba<u8> {
             let dir = ray.direction.clone();
             let param_y: f64 = 0.5 * (dir[1] + 1.0);
 
@@ -104,10 +125,10 @@ pub mod canvas {
             let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
 
             image::Rgba::<u8>([
-                              color[0] as u8,
-                              color[1] as u8,
-                              color[2] as u8,
-                              255,
+                color[0] as u8,
+                color[1] as u8,
+                color[2] as u8,
+                255,
             ])
         }
 
@@ -115,7 +136,7 @@ pub mod canvas {
             let mut image = image::RgbaImage::new(self.width, self.height);
             let transf = self.image_to_ndc();
 
-            let sph = crate::raytracer::sphere::Sphere {
+            let sph = crate::raytracer::actor::Sphere {
                 center: arr1(&[0.0, 0.0, -1.0, 1.0]),
                 radius: 0.5,
                 color: image::Rgba::<u8>([255, 0, 0, 255]),
@@ -148,8 +169,6 @@ pub mod canvas {
                 } else {
                     *pixel = self.background_color(&ray);
                 }
-
-
             }
             image
         }
@@ -157,24 +176,24 @@ pub mod canvas {
 
 }
 
-pub mod sphere {
-    use ndarray::{Array1};
+pub mod actor {
+    use ndarray::Array1;
+
+    /**
+     * Traits in rust are how interfaces are implemented. Depending on their
+     * usage, they can be statically or dinamically dispatched.
+     */
+    pub trait Renderable {
+        fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba<u8>;
+    }
 
     pub struct Sphere {
         pub center: Array1<f64>,
         pub radius: f64,
-        pub color: image::Rgba::<u8>,
+        pub color: image::Rgba<u8>,
     }
 
     impl Sphere {
-        pub fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba::<u8> {
-            if (self.is_hit(ray)) {
-                return self.color.clone();
-            }
-
-            image::Rgba::<u8>([0, 0, 0, 0])
-        }
-
         /**
          * Solving the sphere equation analitically, leads to real solutions
          * (hit front / back) or a complex solution (miss).
@@ -199,4 +218,15 @@ pub mod sphere {
             discriminant > 0.0
         }
     }
+
+    impl Renderable for Sphere {
+        fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba<u8> {
+            if (self.is_hit(ray)) {
+                return self.color.clone();
+            }
+
+            image::Rgba::<u8>([0, 0, 0, 0])
+        }
+    }
+
 }
