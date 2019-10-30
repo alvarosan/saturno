@@ -67,12 +67,14 @@ pub mod ray {
 pub mod canvas {
     use crate::raytracer::actor::Renderable;
     use ndarray::{arr1, arr2, Array2};
+    use std::vec::Vec;
 
     extern crate image;
 
     pub struct Canvas {
         pub width: u32,
         pub height: u32,
+        pub actors: Vec<Box<dyn crate::raytracer::actor::Renderable>>,
     }
 
     impl Canvas {
@@ -113,7 +115,7 @@ pub mod canvas {
          *  Use LERP (linear interpolation), to generate a gradient on the
          *  y-direction (similar to front-to-back blending).
          */
-        pub fn background_color(
+        fn background_color(
             &self,
             ray: &crate::raytracer::ray::Ray,
         ) -> image::Rgba<u8> {
@@ -124,30 +126,22 @@ pub mod canvas {
             let blue = arr1(&[0.1, 0.2, 0.65]);
             let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
 
+            // TODO Hack, using the alpha channel as depth buffer
             image::Rgba::<u8>([
                 color[0] as u8,
                 color[1] as u8,
                 color[2] as u8,
-                255,
+                254,
             ])
         }
 
-        pub fn render_background(&self) -> image::RgbaImage {
+        pub fn render_scene(&self) -> image::RgbaImage {
             let mut image = image::RgbaImage::new(self.width, self.height);
             let transf = self.image_to_ndc();
-
-            let sph = crate::raytracer::actor::Sphere {
-                center: arr1(&[0.0, 0.0, -1.0, 1.0]),
-                radius: 0.5,
-                color: image::Rgba::<u8>([255, 0, 0, 255]),
-            };
 
             for (x, y, pixel) in image.enumerate_pixels_mut() {
                 let point_image = arr1(&[x as f64, y as f64, 0.0, 1.0]);
                 let point_ndc = transf.dot(&point_image);
-
-                // Set Z to where the image plane is located
-                //println!("Image_p / NDC_p: {} / {}", &point_image, &point_ndc);
 
                 // TODO Add default values, perhaps add a vec3 , vec4 classes
                 let mut ray = crate::raytracer::ray::Ray {
@@ -157,17 +151,23 @@ pub mod canvas {
                 };
 
                 ray.direction = point_ndc - ray.origin.clone();
-                //println!("ray.dir: {}", &ray.direction);
 
                 //let nor = crate::raytracer::common::vec4::normalize(
                 //    arr1(&[ray.direction[0], ray.direction[1], ray.direction[2]]));
                 //ray.direction = arr1(&[nor[0], nor[1], nor[2], 0.0]);
 
-                let sphere_color = sph.render(&ray);
-                if (sphere_color[3] == 255) {
-                    *pixel = sphere_color;
-                } else {
-                    *pixel = self.background_color(&ray);
+                *pixel = self.background_color(&ray);
+
+                for actor in self.actors.iter() {
+                    // TODO pseudo depht-test using alpha
+                    if pixel[3] > 254 {
+                        continue;
+                    }
+
+                    let sphere_color = actor.render(&ray);
+                    if (sphere_color[3] == 255) {
+                        *pixel = sphere_color;
+                    }
                 }
             }
             image
@@ -178,6 +178,15 @@ pub mod canvas {
 
 pub mod actor {
     use ndarray::Array1;
+
+    pub enum Shading {
+        COLOR,
+        NORMALS,
+    }
+
+    pub struct Actor<T> {
+        pub geometry: T,
+    }
 
     /**
      * Traits in rust are how interfaces are implemented. Depending on their
@@ -191,6 +200,7 @@ pub mod actor {
         pub center: Array1<f64>,
         pub radius: f64,
         pub color: image::Rgba<u8>,
+        pub shading: Shading,
     }
 
     impl Sphere {
@@ -208,21 +218,55 @@ pub mod actor {
          *      dot(Orig-Cent, Orig-Cent) = radius^2
          *
          */
-        fn is_hit(&self, ray: &crate::raytracer::ray::Ray) -> bool {
+        fn is_hit(&self, ray: &crate::raytracer::ray::Ray) -> f64 {
             let oc = ray.origin.clone() - self.center.clone();
             let a = ray.direction.dot(&ray.direction);
             let b = 2.0 * oc.dot(&ray.direction);
             let c = oc.dot(&oc) - self.radius * self.radius;
             let discriminant = b * b - 4.0 * a * c;
 
-            discriminant > 0.0
+            if (discriminant < 0.0) {
+                -1.0
+            } else {
+                (-b - discriminant.sqrt()) / (2.0 * a)
+            }
+        }
+
+        /**
+         * P - C = Radial Vector
+         *
+         * Note that the range of the normalized components of the unit normals
+         * is [-1.0, 1.0].
+         */
+        fn compute_normal(&self, point_sphere: &Array1<f64>) -> Array1<f64> {
+            let n = point_sphere.clone() - self.center.clone();
+            crate::raytracer::common::vec4::normalize(n)
         }
     }
 
     impl Renderable for Sphere {
         fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba<u8> {
-            if (self.is_hit(ray)) {
-                return self.color.clone();
+            let t = self.is_hit(ray);
+            if (t > 0.0) {
+                match self.shading {
+                    crate::raytracer::actor::Shading::COLOR => {
+                        return self.color.clone()
+                    }
+                    crate::raytracer::actor::Shading::NORMALS => {
+                        let normal =
+                            self.compute_normal(&ray.point_at_parameter(t));
+
+                        // In order to use the normal vectors (i,j,k) as (r,g,b)
+                        // they need to be mapped from [-1.0, 1.0] to the
+                        // [0.0, 1.0] range.
+                        return image::Rgba::<u8>([
+                            (255.0 * (normal[0] + 1.0) * 0.5) as u8,
+                            (255.0 * (normal[1] + 1.0) * 0.5) as u8,
+                            (255.0 * (normal[2] + 1.0) * 0.5) as u8,
+                            255,
+                        ]);
+                    }
+                }
             }
 
             image::Rgba::<u8>([0, 0, 0, 0])

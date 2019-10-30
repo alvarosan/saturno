@@ -3,6 +3,7 @@ pub mod raytracer;
 
 #[cfg(test)]
 mod tests {
+    use crate::raytracer::actor::Shading;
     use ndarray::arr1;
     use std::fs::File;
     use std::path::Path;
@@ -25,13 +26,68 @@ mod tests {
 
     #[test]
     fn render_background() {
-        let canvas = crate::raytracer::canvas::Canvas {
+        let mut canvas = crate::raytracer::canvas::Canvas {
             width: 200,
             height: 100,
+            actors: vec![],
         };
 
-        let image = canvas.render_background();
+        let image = canvas.render_scene();
+        // TODO Move test output into directory
+        // TODO Add image comparisons
         let ref mut out = File::create(&Path::new("background.png")).unwrap();
+        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_two_spheres() {
+        let mut canvas = crate::raytracer::canvas::Canvas {
+            width: 200,
+            height: 100,
+            actors: vec![],
+        };
+
+        let ref mut actors = canvas.actors;
+        actors.push(Box::new(crate::raytracer::actor::Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            shading: Shading::COLOR,
+        }));
+
+        actors.push(Box::new(crate::raytracer::actor::Sphere {
+            center: arr1(&[4.0, 1.0, -4.0, 1.0]),
+            radius: 0.5,
+            color: image::Rgba::<u8>([0, 128, 0, 255]),
+            shading: Shading::COLOR,
+        }));
+
+        let image = canvas.render_scene();
+        let ref mut out = File::create(&Path::new("spheres.png")).unwrap();
+        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_sphere_normals() {
+        let mut canvas = crate::raytracer::canvas::Canvas {
+            width: 200,
+            height: 100,
+            actors: vec![],
+        };
+
+        let ref mut actors = canvas.actors;
+        actors.push(Box::new(crate::raytracer::actor::Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            shading: Shading::NORMALS,
+        }));
+
+        let image = canvas.render_scene();
+        let ref mut out =
+            File::create(&Path::new("sphere_normals.png")).unwrap();
         let _result = image::ImageRgba8(image).save(out, image::PNG);
         assert_eq!(1.0, 1.0);
     }
