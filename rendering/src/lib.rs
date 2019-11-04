@@ -3,14 +3,17 @@ pub mod raytracer;
 
 #[cfg(test)]
 mod tests {
+    use crate::raytracer::canvas::Canvas;
+    use crate::raytracer::canvas::Sphere;
     use crate::raytracer::actor::Shading;
+    use crate::raytracer::common::Ray;
     use ndarray::arr1;
     use std::fs::File;
     use std::path::Path;
 
     #[test]
     fn point_at_parameter() {
-        let ray = crate::raytracer::ray::Ray {
+        let ray = Ray {
             origin: arr1(&[0.5, 0.6, 0.7, 1.0]),
             direction: arr1(&[1.0, 1.0, 1.0, 0.0]),
         };
@@ -26,7 +29,7 @@ mod tests {
 
     #[test]
     fn render_background() {
-        let mut canvas = crate::raytracer::canvas::Canvas {
+        let canvas = Canvas {
             width: 200,
             height: 100,
             actors: vec![],
@@ -42,21 +45,21 @@ mod tests {
 
     #[test]
     fn render_two_spheres() {
-        let mut canvas = crate::raytracer::canvas::Canvas {
+        let mut canvas = Canvas {
             width: 200,
             height: 100,
             actors: vec![],
         };
 
         let ref mut actors = canvas.actors;
-        actors.push(Box::new(crate::raytracer::actor::Sphere {
+        actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
             color: image::Rgba::<u8>([255, 0, 0, 255]),
             shading: Shading::COLOR,
         }));
 
-        actors.push(Box::new(crate::raytracer::actor::Sphere {
+        actors.push(Box::new(Sphere {
             center: arr1(&[4.0, 1.0, -4.0, 1.0]),
             radius: 0.5,
             color: image::Rgba::<u8>([0, 128, 0, 255]),
@@ -71,14 +74,14 @@ mod tests {
 
     #[test]
     fn render_sphere_normals() {
-        let mut canvas = crate::raytracer::canvas::Canvas {
+        let mut canvas = Canvas {
             width: 200,
             height: 100,
             actors: vec![],
         };
 
         let ref mut actors = canvas.actors;
-        actors.push(Box::new(crate::raytracer::actor::Sphere {
+        actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
             color: image::Rgba::<u8>([255, 0, 0, 255]),

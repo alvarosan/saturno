@@ -46,3 +46,15 @@ impl Vec4 {
         x
     }
 }
+
+
+pub struct Ray {
+    pub origin: Array1<f64>,
+    pub direction: Array1<f64>,
+}
+
+impl Ray {
+    pub fn point_at_parameter(&self, t: f64) -> Array1<f64> {
+        self.origin.clone() + t * self.direction.clone()
+    }
+}
