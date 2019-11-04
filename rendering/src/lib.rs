@@ -3,13 +3,13 @@ pub mod raytracer;
 
 #[cfg(test)]
 mod tests {
-    use crate::raytracer::canvas::Canvas;
-    use crate::raytracer::canvas::Sphere;
     use crate::raytracer::actor::Shading;
+    use crate::raytracer::actor::Sphere;
+    use crate::raytracer::canvas::Canvas;
     use crate::raytracer::common::Ray;
+    use crate::raytracer::common_testing::init_image_testing;
     use ndarray::arr1;
     use std::fs::File;
-    use std::path::Path;
 
     #[test]
     fn point_at_parameter() {
@@ -29,6 +29,9 @@ mod tests {
 
     #[test]
     fn render_background() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_background.png");
+
         let canvas = Canvas {
             width: 200,
             height: 100,
@@ -36,15 +39,16 @@ mod tests {
         };
 
         let image = canvas.render_scene();
-        // TODO Move test output into directory
-        // TODO Add image comparisons
-        let ref mut out = File::create(&Path::new("background.png")).unwrap();
+        let ref mut out = File::create(&output_path).unwrap();
         let _result = image::ImageRgba8(image).save(out, image::PNG);
         assert_eq!(1.0, 1.0);
     }
 
     #[test]
     fn render_two_spheres() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_two_spheres.png");
+
         let mut canvas = Canvas {
             width: 200,
             height: 100,
@@ -67,13 +71,16 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&Path::new("spheres.png")).unwrap();
+        let ref mut out = File::create(&output_path).unwrap();
         let _result = image::ImageRgba8(image).save(out, image::PNG);
         assert_eq!(1.0, 1.0);
     }
 
     #[test]
     fn render_sphere_normals() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_sphere_normals.png");
+
         let mut canvas = Canvas {
             width: 200,
             height: 100,
@@ -89,8 +96,39 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out =
-            File::create(&Path::new("sphere_normals.png")).unwrap();
+        let ref mut out = File::create(&output_path).unwrap();
+        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_two_spheres_normals() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_two_spheres_normals.png");
+
+        let mut canvas = Canvas {
+            width: 200,
+            height: 100,
+            actors: vec![],
+        };
+
+        let ref mut actors = canvas.actors;
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            shading: Shading::NORMALS,
+        }));
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, -100.5, -1.0, 1.0]),
+            radius: 100.0,
+            color: image::Rgba::<u8>([0, 128, 0, 255]),
+            shading: Shading::NORMALS,
+        }));
+
+        let image = canvas.render_scene();
+        let ref mut out = File::create(&output_path).unwrap();
         let _result = image::ImageRgba8(image).save(out, image::PNG);
         assert_eq!(1.0, 1.0);
     }
