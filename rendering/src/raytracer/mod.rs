@@ -1,53 +1,4 @@
-pub mod common {
-    use ndarray::{Array1, ArrayView1};
-
-    pub struct vec4 {
-        data: Array1<f64>,
-    }
-
-    impl vec4 {
-        pub fn x(&self) -> f64 {
-            self.data[0]
-        }
-        pub fn y(&self) -> f64 {
-            self.data[1]
-        }
-        pub fn z(&self) -> f64 {
-            self.data[2]
-        }
-        pub fn w(&self) -> f64 {
-            self.data[3]
-        }
-        pub fn r(&self) -> f64 {
-            self.data[0]
-        }
-        pub fn g(&self) -> f64 {
-            self.data[1]
-        }
-        pub fn b(&self) -> f64 {
-            self.data[2]
-        }
-        pub fn a(&self) -> f64 {
-            self.data[3]
-        }
-
-        pub fn normalized(&self) -> vec4 {
-            vec4 {
-                data: vec4::normalize(self.data.clone()),
-            }
-        }
-
-        fn l2_norm(x: ArrayView1<f64>) -> f64 {
-            x.dot(&x).sqrt()
-        }
-
-        pub fn normalize(mut x: Array1<f64>) -> Array1<f64> {
-            let norm: f64 = vec4::l2_norm(x.view());
-            x.mapv_inplace(|e| e / norm);
-            x
-        }
-    }
-}
+pub mod common;
 
 pub mod ray {
     use ndarray::Array1;
@@ -178,6 +129,7 @@ pub mod canvas {
 
 pub mod actor {
     use ndarray::Array1;
+    use crate::raytracer::common::Vec4;
 
     pub enum Shading {
         COLOR,
@@ -240,7 +192,7 @@ pub mod actor {
          */
         fn compute_normal(&self, point_sphere: &Array1<f64>) -> Array1<f64> {
             let n = point_sphere.clone() - self.center.clone();
-            crate::raytracer::common::vec4::normalize(n)
+            Vec4::normalize(n)
         }
     }
 
