@@ -25,7 +25,7 @@ pub mod canvas {
     pub struct Canvas {
         pub width: u32,
         pub height: u32,
-        pub actors: Vec<Box<dyn crate::raytracer::actor::Renderable>>,
+        pub actors: Vec<Box<dyn Renderable>>,
     }
 
     impl Canvas {
@@ -116,7 +116,7 @@ pub mod canvas {
                     }
 
                     let sphere_color = actor.render(&ray);
-                    if (sphere_color[3] == 255) {
+                    if sphere_color[3] == 255 {
                         *pixel = sphere_color;
                     }
                 }
@@ -177,7 +177,7 @@ pub mod actor {
             let c = oc.dot(&oc) - self.radius * self.radius;
             let discriminant = b * b - 4.0 * a * c;
 
-            if (discriminant < 0.0) {
+            if discriminant < 0.0 {
                 -1.0
             } else {
                 (-b - discriminant.sqrt()) / (2.0 * a)
@@ -199,7 +199,7 @@ pub mod actor {
     impl Renderable for Sphere {
         fn render(&self, ray: &crate::raytracer::ray::Ray) -> image::Rgba<u8> {
             let t = self.is_hit(ray);
-            if (t > 0.0) {
+            if t > 0.0 {
                 match self.shading {
                     crate::raytracer::actor::Shading::COLOR => {
                         return self.color.clone()
