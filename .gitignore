@@ -1,2 +1,5 @@
+# Go server target
+backend/backend
+
+# Rust targets
 **/target
-**/*.rs.bk

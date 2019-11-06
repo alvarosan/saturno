@@ -19,7 +19,7 @@ pub struct Hit {
  * usage, they can be statically or dinamically dispatched.
  */
 pub trait Renderable {
-    fn render(&self, hit: &Hit) -> image::Rgba<u8>;
+    fn render(&self, hit: &Hit) -> Array1<f64>;
 }
 
 pub trait Hittable {
@@ -39,7 +39,7 @@ pub trait RayTraceable: Renderable + Hittable {}
 pub struct Sphere {
     pub center: Array1<f64>,
     pub radius: f64,
-    pub color: image::Rgba<u8>,
+    pub color: Array1<f64>,
     pub shading: Shading,
 }
 
@@ -108,7 +108,7 @@ impl Hittable for Sphere {
 }
 
 impl Renderable for Sphere {
-    fn render(&self, hit: &Hit) -> image::Rgba<u8> {
+    fn render(&self, hit: &Hit) -> Array1<f64> {
         match self.shading {
             Shading::COLOR => return self.color.clone(),
             Shading::NORMALS => {
@@ -117,12 +117,7 @@ impl Renderable for Sphere {
                 // In order to use the normal vectors (i,j,k) as (r,g,b)
                 // they need to be mapped from [-1.0, 1.0] to the
                 // [0.0, 1.0] range.
-                return image::Rgba::<u8>([
-                    (255.0 * (normal[0] + 1.0) * 0.5) as u8,
-                    (255.0 * (normal[1] + 1.0) * 0.5) as u8,
-                    (255.0 * (normal[2] + 1.0) * 0.5) as u8,
-                    255,
-                ]);
+                return 255.0 * ((normal + 1.0) * 0.5);
             }
         }
     }

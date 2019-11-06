@@ -36,6 +36,7 @@ mod tests {
             width: 200,
             height: 100,
             actors: vec![],
+            samples: 1,
         };
 
         let image = canvas.render_scene();
@@ -53,20 +54,21 @@ mod tests {
             width: 200,
             height: 100,
             actors: vec![],
+            samples: 1,
         };
 
         let ref mut actors = canvas.actors;
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
-            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            color: arr1(&[255.0, 0.0, 0.0, 255.0]),
             shading: Shading::COLOR,
         }));
 
         actors.push(Box::new(Sphere {
             center: arr1(&[4.0, 1.0, -4.0, 1.0]),
             radius: 0.5,
-            color: image::Rgba::<u8>([0, 128, 0, 255]),
+            color: arr1(&[0.0, 128.0, 0.0, 255.0]),
             shading: Shading::COLOR,
         }));
 
@@ -85,13 +87,14 @@ mod tests {
             width: 200,
             height: 100,
             actors: vec![],
+            samples: 1,
         };
 
         let ref mut actors = canvas.actors;
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
-            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            color: arr1(&[255.0, 0.0, 0.0, 255.0]),
             shading: Shading::NORMALS,
         }));
 
@@ -110,20 +113,54 @@ mod tests {
             width: 200,
             height: 100,
             actors: vec![],
+            samples: 1,
         };
 
         let ref mut actors = canvas.actors;
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
-            color: image::Rgba::<u8>([255, 0, 0, 255]),
+            color: arr1(&[255.0, 0.0, 0.0, 255.0]),
             shading: Shading::NORMALS,
         }));
 
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, -100.5, -1.0, 1.0]),
             radius: 100.0,
-            color: image::Rgba::<u8>([0, 128, 0, 255]),
+            color: arr1(&[0.0, 128.0, 0.0, 255.0]),
+            shading: Shading::NORMALS,
+        }));
+
+        let image = canvas.render_scene();
+        let ref mut out = File::create(&output_path).unwrap();
+        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_two_spheres_antialiasing() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_two_spheres_antialiasing.png");
+
+        let mut canvas = Canvas {
+            width: 200,
+            height: 100,
+            actors: vec![],
+            samples: 10,
+        };
+
+        let ref mut actors = canvas.actors;
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            color: arr1(&[255.0, 0.0, 0.0, 255.0]),
+            shading: Shading::NORMALS,
+        }));
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, -100.5, -1.0, 1.0]),
+            radius: 100.0,
+            color: arr1(&[0.0, 128.0, 0.0, 255.0]),
             shading: Shading::NORMALS,
         }));
 
