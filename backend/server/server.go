@@ -11,7 +11,7 @@ package server
 //
 // extern unsigned char* get_frame();
 //
-// unsigned char get_value(void* data, int index) {
+// unsigned char get_value(void* data, const unsigned int index) {
 //     unsigned char* data_uchar = (unsigned char*) data;
 //     return data_uchar[index];
 // }
@@ -25,6 +25,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	//"time"
 	"unsafe"
 )
 
@@ -49,8 +50,8 @@ func handleServerSideApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func WrapImage() {
-	var height int = 100
 	var width int = 200
+	var height int = 100
 	myImage := image.NewNRGBA(image.Rect(0, 0, width, height))
 	var frame_ptr = unsafe.Pointer(C.get_frame())
 
@@ -58,11 +59,11 @@ func WrapImage() {
 		for x := 0; x < width; x++ {
 
 			pixelIdx := 4 * (y*width + x)
-			red := uint8(C.get_value(frame_ptr, C.int(pixelIdx)))
-			green := uint8(C.get_value(frame_ptr, C.int(pixelIdx+1)))
-			blue := uint8(C.get_value(frame_ptr, C.int(pixelIdx+2)))
-//			alpha := uint8(C.get_value(frame_ptr, C.int(pixelIdx+3)))
-			myImage.SetNRGBA(x, y, color.NRGBA{red, green, blue, 255})
+			r := uint8(C.get_value(frame_ptr, C.uint(pixelIdx)))
+			g := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+1)))
+			b := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+2)))
+			a := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+3)))
+			myImage.SetNRGBA(x, y, color.NRGBA{r, g, b, a})
 		}
 	}
 
@@ -71,13 +72,12 @@ func WrapImage() {
 
 func writeImageToFile(img image.Image) {
 	// outputFile is a File type which satisfies Writer interface
-	outputFile, err := os.Create("my_test.jpeg")
+	outputFile, err := os.Create("my_test.png")
 	checkErr(err)
 
 	// Encode takes a writer interface and an image interface
 	// We pass it the File and the RGBA
 	png.Encode(outputFile, img)
-        //jpeg.Encode(outputFile, img)
 
 	// Don't forget to close files
 	outputFile.Close()

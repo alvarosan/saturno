@@ -1,7 +1,10 @@
-use crate::raytracer::actor::Sphere;
 use crate::raytracer::actor::Shading;
+use crate::raytracer::actor::Sphere;
 use crate::raytracer::canvas::Canvas;
 use ndarray::arr1;
+//use std::fs::File;
+//use std::path::Path;
+use std::time::Instant;
 
 #[no_mangle]
 pub extern "C" fn get_frame() -> *const u8 {
@@ -27,13 +30,21 @@ pub extern "C" fn get_frame() -> *const u8 {
         shading: Shading::NORMALS,
     }));
 
+    let now = Instant::now();
     let image = canvas.render_scene();
+    println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
+
+    // TODO image gets deallocated when this function runs out of scope,
+    // therefore it is necessary to move the entire image object or ensure
+    // it outlives the pointer. 
+    // https://docs.rs/image/0.19.0/image/struct.ImageBuffer.html#method.as_ptr
+    //
+    // This currently causes a garbagy image in Go.
     let image_ptr = image.into_raw().as_ptr();
 
-    let value: f64 = 0.5565;
-    println!(">>> Rendered frame in {} ms !!", value);
+//    let image_ptr = image.clone().into_raw().as_ptr();
+//    let ref mut out = File::create(&Path::new("test_rust.png")).unwrap();
+//    let _result = image::ImageRgba8(image).save(out, image::PNG);
 
-    //let result: f64 = 0.666;
-    //result
     image_ptr
 }
