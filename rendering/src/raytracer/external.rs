@@ -2,12 +2,16 @@ use crate::raytracer::actor::Shading;
 use crate::raytracer::actor::Sphere;
 use crate::raytracer::canvas::Canvas;
 use ndarray::arr1;
-//use std::fs::File;
-//use std::path::Path;
 use std::time::Instant;
+use std::mem;
+
+type Frame = image::RgbaImage;
+
 
 #[no_mangle]
-pub extern "C" fn get_frame() -> *const u8 {
+pub extern "C" fn get_frame() -> Box<Frame> {
+    // TODO ensure one does not need to create a new
+    // canvas every time (single allocation).
     let mut canvas = Canvas {
         width: 200,
         height: 100,
@@ -34,17 +38,58 @@ pub extern "C" fn get_frame() -> *const u8 {
     let image = canvas.render_scene();
     println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
 
-    // TODO image gets deallocated when this function runs out of scope,
-    // therefore it is necessary to move the entire image object or ensure
-    // it outlives the pointer. 
-    // https://docs.rs/image/0.19.0/image/struct.ImageBuffer.html#method.as_ptr
+    //    let image_ptr = image.clone().into_raw().as_ptr();
+    //    let ref mut out = File::create(&Path::new("test_rust.png")).unwrap();
+    //    let _result = image::ImageRgba8(image).save(out, image::PNG);
+
+    // The Box smart pointer ensures the instance outlives the
+    // underlying data pointer.
+    Box::new(image)
+}
+
+#[no_mangle]
+pub extern "C" fn get_width(ptr: *mut Frame) -> u32 {
+    let frame = unsafe {
+        assert!(!ptr.is_null());
+        &mut *ptr
+    };
+    frame.width()
+}
+
+#[no_mangle]
+pub extern "C" fn get_height(ptr: *mut Frame) -> u32 {
+    let frame = unsafe {
+        assert!(!ptr.is_null());
+        &mut *ptr
+    };
+    frame.height()
+}
+
+#[no_mangle]
+pub extern "C" fn get_value(ptr: *mut Frame, x: u32, y: u32, c: u32) -> u8 {
+    let frame = unsafe {
+        assert!(!ptr.is_null());
+        &mut *ptr
+    };
+    frame.get_pixel(x, y)[c as usize]
+}
+
+#[no_mangle]
+pub extern "C" fn get_data(ptr: *mut Frame) -> *const u8 {
+    let frame = unsafe {
+        assert!(!ptr.is_null());
+        &mut *ptr
+    };
+
+    // Found (a similar) solution with `rustc --explain E0507`
     //
-    // This currently causes a garbagy image in Go.
-    let image_ptr = image.into_raw().as_ptr();
+    // TODO Need to dobule check if the original content gets replaced
+    // back after this (otherwise it might be dropped after this function
+    // goes out of scope.
+    //
+    let some_img = image::RgbaImage::new(10, 10);
+    let data_ptr: *const u8 = mem::replace(frame, some_img).into_raw().as_ptr();
 
-//    let image_ptr = image.clone().into_raw().as_ptr();
-//    let ref mut out = File::create(&Path::new("test_rust.png")).unwrap();
-//    let _result = image::ImageRgba8(image).save(out, image::PNG);
-
-    image_ptr
+    //std::ptr::null()
+    data_ptr
 }

@@ -9,15 +9,21 @@ package server
 
 // #cgo LDFLAGS: -L /home/alvaro/workspace/source/saturno/rendering/target/release  -lrendering_c_abi
 //
-// extern unsigned char* get_frame();
+// #include <stdlib.h>
 //
-// unsigned char get_value(void* data, const unsigned int index) {
-//     unsigned char* data_uchar = (unsigned char*) data;
-//     return data_uchar[index];
+// extern void* get_frame();
+// unsigned char get_value(void* frame, unsigned int x, unsigned int y, unsigned int c);
+// extern unsigned int get_width(void* frame);
+// extern unsigned int get_height(void* frame);
+//
+// void drop_frame(void* frame) {
+//      free(frame);
 // }
+//
 import "C"
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -26,6 +32,7 @@ import (
 	"net/http"
 	"os"
 	//"time"
+	"strconv"
 	"unsafe"
 )
 
@@ -46,41 +53,37 @@ func handleClientSideApp(w http.ResponseWriter, r *http.Request) {
 
 func handleServerSideApp(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("> Serving serverside-rendering app ... ")
-	//fmt.Fprintf(w, "PONG! /serverside API '%v' '%d'", r.Method, result)
+
+	frame := GetFrame()
+	buffer := new(bytes.Buffer)
+	err := png.Encode(buffer, frame)
+	checkErr(err)
+
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	_, err = w.Write(buffer.Bytes())
+	checkErr(err)
 }
 
-func WrapImage() {
-	var width int = 200
-	var height int = 100
-	myImage := image.NewNRGBA(image.Rect(0, 0, width, height))
-	var frame_ptr = unsafe.Pointer(C.get_frame())
+func GetFrame() image.Image {
+	var framePtr = unsafe.Pointer(C.get_frame())
+	var width int = int(C.get_width(framePtr))
+	var height int = int(C.get_height(framePtr))
+	goFrame := image.NewNRGBA(image.Rect(0, 0, width, height))
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 
-			pixelIdx := 4 * (y*width + x)
-			r := uint8(C.get_value(frame_ptr, C.uint(pixelIdx)))
-			g := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+1)))
-			b := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+2)))
-			a := uint8(C.get_value(frame_ptr, C.uint(pixelIdx+3)))
-			myImage.SetNRGBA(x, y, color.NRGBA{r, g, b, a})
+			r := uint8(C.get_value(framePtr, C.uint(x), C.uint(y), 0))
+			g := uint8(C.get_value(framePtr, C.uint(x), C.uint(y), 1))
+			b := uint8(C.get_value(framePtr, C.uint(x), C.uint(y), 2))
+			a := uint8(C.get_value(framePtr, C.uint(x), C.uint(y), 3))
+			goFrame.SetNRGBA(x, y, color.NRGBA{r, g, b, a})
 		}
 	}
 
-	writeImageToFile(myImage)
-}
-
-func writeImageToFile(img image.Image) {
-	// outputFile is a File type which satisfies Writer interface
-	outputFile, err := os.Create("my_test.png")
-	checkErr(err)
-
-	// Encode takes a writer interface and an image interface
-	// We pass it the File and the RGBA
-	png.Encode(outputFile, img)
-
-	// Don't forget to close files
-	outputFile.Close()
+	C.drop_frame(framePtr)
+	return goFrame
 }
 
 func checkErr(err error) {
