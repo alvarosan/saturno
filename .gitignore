@@ -3,3 +3,6 @@ backend/backend
 
 # Rust targets
 **/target
+
+# Yarn targets
+**/dist

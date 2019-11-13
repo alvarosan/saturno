@@ -39,16 +39,14 @@ import (
 var LISTENING_PORT = os.Getenv("LISTENING_PORT")
 
 func Initialize() {
-	http.HandleFunc("/clientside", handleClientSideApp)
-	http.HandleFunc("/serverside", handleServerSideApp)
+
+        fs := http.FileServer(http.Dir("dist"))
+	http.Handle("/", http.StripPrefix("", fs))
+
+	http.HandleFunc("/api/v1/render", handleServerSideApp)
 	fmt.Println("> Server initialized, listening on port " + LISTENING_PORT)
 
 	log.Fatal(http.ListenAndServe(":"+LISTENING_PORT, nil))
-}
-
-func handleClientSideApp(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("> Serving clientside-rendering app ... ")
-	fmt.Fprintf(w, "PONG! /clientside API '%v'", r.Method)
 }
 
 func handleServerSideApp(w http.ResponseWriter, r *http.Request) {

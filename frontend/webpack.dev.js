@@ -3,10 +3,14 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    entry: "./src/index.js",
+    entry: "./src/index.tsx",
     output: {
         filename: "[name].bundle.js",
         path: path.resolve(__dirname, "dist")
+    },
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: [".ts", ".tsx", ".js"]
     },
     devServer: {
         historyApiFallback: true,
@@ -21,9 +25,18 @@ module.exports = {
                 use: ["style-loader", "css-loader"]
             },
             {
-                test: /\.js$/,
+                test: /\.ts(x?)$/,
                 exclude: /node_modules/,
-                use: 'babel-loader'
+                use: [
+                    {
+                        loader: "ts-loader"
+                    }
+                ]
+            },
+            {
+                enforce: "pre",
+                test: /\.js$/,
+                loader: "source-map-loader"
             }
         ]
     }
