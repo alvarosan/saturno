@@ -1,3 +1,4 @@
+/*
 use crate::raytracer::actor::Shading;
 use crate::raytracer::actor::Sphere;
 use crate::raytracer::canvas::Canvas;
@@ -92,4 +93,6 @@ pub extern "C" fn get_data(ptr: *mut Frame) -> *const u8 {
 
     //std::ptr::null()
     data_ptr
+
 }
+*/

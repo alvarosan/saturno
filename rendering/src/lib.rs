@@ -1,6 +1,7 @@
 //pub mod mandelbrot;
 pub mod raytracer;
 
+/*
 #[cfg(test)]
 mod tests {
     use crate::raytracer::actor::Shading;
@@ -164,3 +165,4 @@ mod tests {
         assert_eq!(1.0, 1.0);
     }
 }
+*/
