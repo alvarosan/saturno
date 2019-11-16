@@ -1,4 +1,4 @@
-pub mod mandelbrot;
+//pub mod mandelbrot;
 pub mod raytracer;
 
 #[cfg(test)]
@@ -9,7 +9,6 @@ mod tests {
     use crate::raytracer::common::Ray;
     use crate::raytracer::common_testing::init_image_testing;
     use ndarray::arr1;
-    use std::fs::File;
 
     #[test]
     fn point_at_parameter() {
@@ -40,8 +39,7 @@ mod tests {
         };
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&output_path).unwrap();
-        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        let _result = image.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -73,8 +71,7 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&output_path).unwrap();
-        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        let _result = image.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -99,8 +96,7 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&output_path).unwrap();
-        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        let _result = image.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -132,8 +128,7 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&output_path).unwrap();
-        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        let _result = image.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -165,8 +160,7 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let ref mut out = File::create(&output_path).unwrap();
-        let _result = image::ImageRgba8(image).save(out, image::PNG);
+        let _result = image.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 }

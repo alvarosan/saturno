@@ -6,15 +6,13 @@ edition = "2018"
 
 [lib]
 name = "rendering_c_abi"
-version = "0.1.0"
 crate-type = ["dylib"]
-authors = ["Alvaro Sanchez <a.sanchez@smartreporting.de>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 num = "0.1.39"
-image = "0.14.0"
+image = "0.22.3"
 ndarray = "0.12.0"
 rand = "0.7.2"
