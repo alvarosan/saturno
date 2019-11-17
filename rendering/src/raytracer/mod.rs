@@ -7,33 +7,56 @@ pub mod external;
 pub struct Image {
     pub width: u32,
     pub height: u32,
-    data: Vec<u8>,
+    pub chan: u32,
+    pub data: Vec<u8>,
 }
 
 impl Image {
-    pub fn new(width: u32, height: u32) -> Image {
+    pub fn new(width: u32, height: u32, chan: u32) -> Image {
         // Allocate for 4C (RGBA)
-        let size = width as usize * height as usize * 4;
+        let size = width as usize * height as usize * chan as usize;
         let mut data: Vec<u8> = Vec::with_capacity(size);
         data.resize(size, 0);
         Image {
             width,
             height,
+            chan,
             data,
         }
     }
 
     pub fn size(&self) -> usize {
-        self.data.len()
+        self.data.len() / self.chan as usize
     }
 
-    pub fn get_pixel(&mut self, index: usize) -> (u32, u32, Option<&mut u8>) {
-        // index = y * width + x
-        let y = index / self.width as usize;
-        let x = index - y as usize * self.width as usize;
-        let pixel = self.data.get_mut(index);
+    pub fn get_pixel_coordinate(&mut self, index: usize) -> (u32, u32) {
+        // index = y * stride + x
+        let stride = self.width as usize;
+        let y = index / stride;
+        let x = index - y as usize * stride;
+        
+        (x as u32, y as u32)
+    }
 
-        (x as u32, y as u32, pixel)
+    pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
+        //println!(">> Color: {0}, {1}, {2}, {3}", color[0], color[1], color[2], color[3]);
+
+        let j = index * self.chan as usize;
+        self.data[j] = color[0];
+        self.data[j + 1] = color[1];
+        self.data[j + 2] = color[2];
+        self.data[j + 3] = color[3];
+
+    }
+
+    pub fn print(&self) {
+        for i in 0..self.size() {
+            let j = i * 4;
+            if i % 800 == 0 { 
+                println!(">> data: {0}, {1}, {2}, {3}", self.data[j],
+                    self.data[j+1], self.data[j+2], self.data[j+3]);
+            }
+        }
     }
 }
 
@@ -104,7 +127,7 @@ pub mod canvas {
         }
 
         pub fn render_scene(&self) -> Image {
-            let mut image = Image::new(self.width, self.height);
+            let mut image = Image::new(self.width, self.height, 4);
 
             let camera = Camera::new(
                 arr1(&[-2.0, -1.0, -1.0, 1.0]),
@@ -118,7 +141,7 @@ pub mod canvas {
             let mut rng = rand::thread_rng();
 
             for i in 0..image.size() {
-                let (x, y, pixel) = image.get_pixel(i);
+                let (x, y) = image.get_pixel_coordinate(i);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
                 // TODO review why the statement below produces weird results...
@@ -138,12 +161,11 @@ pub mod canvas {
 
                 color = color / self.samples as f64;
 
-//                *pixel = image::Rgba::<u8>([
-//                    (color[0]) as u8,
-//                    (color[1]) as u8,
-//                    (color[2]) as u8,
-//                    255,
-//                ]);
+                image.set_pixel(i, [color[0] as u8,
+                    color[1] as u8,
+                    color[2] as u8,
+                    255]);
+
             }
             image
         }

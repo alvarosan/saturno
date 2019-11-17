@@ -1,4 +1,3 @@
-/*
 use std::path::{PathBuf};
 use std::fs::{create_dir};
 
@@ -13,5 +12,3 @@ pub fn init_image_testing() -> PathBuf {
     test_path
 }
 // TODO Add image comparisons
-*/
-

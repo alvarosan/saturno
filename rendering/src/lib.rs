@@ -1,7 +1,6 @@
 //pub mod mandelbrot;
 pub mod raytracer;
 
-/*
 #[cfg(test)]
 mod tests {
     use crate::raytracer::actor::Shading;
@@ -10,6 +9,8 @@ mod tests {
     use crate::raytracer::common::Ray;
     use crate::raytracer::common_testing::init_image_testing;
     use ndarray::arr1;
+
+    extern crate image;
 
     #[test]
     fn point_at_parameter() {
@@ -32,15 +33,19 @@ mod tests {
         let mut output_path = init_image_testing();
         output_path.push("render_background.png");
 
+        let dims: [u32; 2] = [200, 100];
         let canvas = Canvas {
-            width: 200,
-            height: 100,
+            width: dims[0],
+            height: dims[1],
             actors: vec![],
             samples: 1,
         };
 
         let image = canvas.render_scene();
-        let _result = image.save(output_path);
+        let cached = image.size();
+        image.print();
+        let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -49,9 +54,10 @@ mod tests {
         let mut output_path = init_image_testing();
         output_path.push("render_two_spheres.png");
 
+        let dims: [u32; 2] = [200, 100];
         let mut canvas = Canvas {
-            width: 200,
-            height: 100,
+            width: dims[0],
+            height: dims[1],
             actors: vec![],
             samples: 1,
         };
@@ -72,7 +78,8 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let _result = image.save(output_path);
+        let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -81,9 +88,10 @@ mod tests {
         let mut output_path = init_image_testing();
         output_path.push("render_sphere_normals.png");
 
+        let dims: [u32; 2] = [200, 100];
         let mut canvas = Canvas {
-            width: 200,
-            height: 100,
+            width: dims[0],
+            height: dims[1],
             actors: vec![],
             samples: 1,
         };
@@ -97,7 +105,8 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let _result = image.save(output_path);
+        let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -106,9 +115,10 @@ mod tests {
         let mut output_path = init_image_testing();
         output_path.push("render_two_spheres_normals.png");
 
+        let dims: [u32; 2] = [200, 100];
         let mut canvas = Canvas {
-            width: 200,
-            height: 100,
+            width: dims[0],
+            height: dims[1],
             actors: vec![],
             samples: 1,
         };
@@ -129,7 +139,8 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let _result = image.save(output_path);
+        let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 
@@ -138,9 +149,10 @@ mod tests {
         let mut output_path = init_image_testing();
         output_path.push("render_two_spheres_antialiasing.png");
 
+        let dims: [u32; 2] = [200, 100];
         let mut canvas = Canvas {
-            width: 200,
-            height: 100,
+            width: dims[0],
+            height: dims[1],
             actors: vec![],
             samples: 10,
         };
@@ -161,8 +173,8 @@ mod tests {
         }));
 
         let image = canvas.render_scene();
-        let _result = image.save(output_path);
+        let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
 }
-*/
