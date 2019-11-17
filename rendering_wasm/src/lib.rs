@@ -1,8 +1,9 @@
-//extern crate rendering;
+extern crate rendering;
+
+//use rendering::raytracer::external::{get_frame, Frame};
+use wasm_bindgen::prelude::*;
 
 mod utils;
-
-use wasm_bindgen::prelude::*;
 
 //// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 //// allocator.
@@ -11,7 +12,7 @@ use wasm_bindgen::prelude::*;
 //static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-extern {
+extern "C" {
     fn alert(s: &str);
 }
 
@@ -19,3 +20,8 @@ extern {
 pub fn greet() {
     alert("Hello, {{project-name}}!");
 }
+
+//#[wasm_bindgen]
+//pub fn render() -> Box<Frame> {
+//    get_frame()
+//}

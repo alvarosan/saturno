@@ -9,7 +9,7 @@ edition = "2018"
 
 [lib]
 name = "rendering_c_abi"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 edition = "2018"
 
 [dependencies]
