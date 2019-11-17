@@ -15,11 +15,25 @@ impl Image {
         // Allocate for 4C (RGBA)
         let size = width as usize * height as usize * 4;
         let mut data: Vec<u8> = Vec::with_capacity(size);
+        data.resize(size, 0);
         Image {
             width,
             height,
             data,
         }
+    }
+
+    pub fn size(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn get_pixel(&mut self, index: usize) -> (u32, u32, Option<&mut u8>) {
+        // index = y * width + x
+        let y = index / self.width as usize;
+        let x = index - y as usize * self.width as usize;
+        let pixel = self.data.get_mut(index);
+
+        (x as u32, y as u32, pixel)
     }
 }
 
@@ -103,33 +117,34 @@ pub mod canvas {
             // TODO only create it if samples > 1.
             let mut rng = rand::thread_rng();
 
-            //            for (x, y, pixel) in image.enumerate_pixels_mut() {
-            //                let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
-            //
-            //                // TODO review why the statement below produces weird results...
-            //                // for i in 0..=number_samples {
-            //                for i in 0..self.samples {
-            //                    let mut x_final = x as f64;
-            //                    let mut y_final = y as f64;
-            //
-            //                    if i > 0 {
-            //                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
-            //                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
-            //                    }
-            //
-            //                    let ray = camera.get_ray(x_final, y_final);
-            //                    color = color + self.cast_rays(&ray);
-            //                }
-            //
-            //                color = color / self.samples as f64;
-            //
-            //                *pixel = image::Rgba::<u8>([
-            //                    (color[0]) as u8,
-            //                    (color[1]) as u8,
-            //                    (color[2]) as u8,
-            //                    255,
-            //                ]);
-            //            }
+            for i in 0..image.size() {
+                let (x, y, pixel) = image.get_pixel(i);
+                let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
+
+                // TODO review why the statement below produces weird results...
+                // for i in 0..=number_samples {
+                for i in 0..self.samples {
+                    let mut x_final = x as f64;
+                    let mut y_final = y as f64;
+
+                    if i > 0 {
+                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
+                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
+                    }
+
+                    let ray = camera.get_ray(x_final, y_final);
+                    color = color + self.cast_rays(&ray);
+                }
+
+                color = color / self.samples as f64;
+
+//                *pixel = image::Rgba::<u8>([
+//                    (color[0]) as u8,
+//                    (color[1]) as u8,
+//                    (color[2]) as u8,
+//                    255,
+//                ]);
+            }
             image
         }
     }
