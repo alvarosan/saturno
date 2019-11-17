@@ -1,12 +1,11 @@
-/*
 use crate::raytracer::actor::Shading;
 use crate::raytracer::actor::Sphere;
 use crate::raytracer::canvas::Canvas;
+use crate::raytracer::Image;
 use ndarray::arr1;
 use std::time::Instant;
-use std::mem;
 
-type Frame = image::RgbaImage;
+type Frame = Image;
 
 
 #[no_mangle]
@@ -54,7 +53,7 @@ pub extern "C" fn get_width(ptr: *mut Frame) -> u32 {
         assert!(!ptr.is_null());
         &mut *ptr
     };
-    frame.width()
+    frame.width
 }
 
 #[no_mangle]
@@ -63,7 +62,7 @@ pub extern "C" fn get_height(ptr: *mut Frame) -> u32 {
         assert!(!ptr.is_null());
         &mut *ptr
     };
-    frame.height()
+    frame.height
 }
 
 #[no_mangle]
@@ -72,7 +71,7 @@ pub extern "C" fn get_value(ptr: *mut Frame, x: u32, y: u32, c: u32) -> u8 {
         assert!(!ptr.is_null());
         &mut *ptr
     };
-    frame.get_pixel(x, y)[c as usize]
+    frame.get_value(x, y, c)
 }
 
 #[no_mangle]
@@ -82,17 +81,6 @@ pub extern "C" fn get_data(ptr: *mut Frame) -> *const u8 {
         &mut *ptr
     };
 
-    // Found (a similar) solution with `rustc --explain E0507`
-    //
-    // TODO Need to dobule check if the original content gets replaced
-    // back after this (otherwise it might be dropped after this function
-    // goes out of scope.
-    //
-    let some_img = image::RgbaImage::new(10, 10);
-    let data_ptr: *const u8 = mem::replace(frame, some_img).into_raw().as_ptr();
-
-    //std::ptr::null()
+    let data_ptr: *const u8 = frame.data.as_ptr();
     data_ptr
-
 }
-*/

@@ -38,6 +38,11 @@ impl Image {
         (x as u32, y as u32)
     }
 
+    pub fn get_value(&self, x: u32, y: u32, c: u32) -> u8 {
+        let index = (y * self.width + x) * self.chan + c;
+        self.data[index as usize]
+    }
+
     pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
         //println!(">> Color: {0}, {1}, {2}, {3}", color[0], color[1], color[2], color[3]);
 
