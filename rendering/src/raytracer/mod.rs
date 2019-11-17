@@ -4,6 +4,25 @@ pub mod common;
 pub mod common_testing;
 pub mod external;
 
+pub struct Image {
+    pub width: u32,
+    pub height: u32,
+    data: Vec<u8>,
+}
+
+impl Image {
+    pub fn new(width: u32, height: u32) -> Image {
+        // Allocate for 4C (RGBA)
+        let size = width as usize * height as usize * 4;
+        let mut data: Vec<u8> = Vec::with_capacity(size);
+        Image {
+            width,
+            height,
+            data,
+        }
+    }
+}
+
 pub mod canvas {
     extern crate rand;
 
@@ -13,10 +32,9 @@ pub mod canvas {
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
+    use crate::raytracer::Image;
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
-
-    extern crate image;
 
     pub struct Canvas {
         pub width: u32,
@@ -31,8 +49,7 @@ pub mod canvas {
          *  Use LERP (linear interpolation), to generate a gradient on the
          *  y-direction (similar to front-to-back blending).
          */
-        fn background_color(&self, ray: &Ray) -> Array1<f64> /*image::Rgba<u8>*/
-        {
+        fn background_color(&self, ray: &Ray) -> Array1<f64> {
             let dir = ray.direction.clone();
             let param_y: f64 = 0.5 * (dir[1] + 1.0);
 
@@ -72,8 +89,8 @@ pub mod canvas {
             color
         }
 
-        pub fn render_scene(&self) -> image::RgbaImage {
-            let mut image = image::RgbaImage::new(self.width, self.height);
+        pub fn render_scene(&self) -> Image {
+            let mut image = Image::new(self.width, self.height);
 
             let camera = Camera::new(
                 arr1(&[-2.0, -1.0, -1.0, 1.0]),
@@ -86,33 +103,33 @@ pub mod canvas {
             // TODO only create it if samples > 1.
             let mut rng = rand::thread_rng();
 
-            for (x, y, pixel) in image.enumerate_pixels_mut() {
-                let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
-
-                // TODO review why the statement below produces weird results...
-                // for i in 0..=number_samples {
-                for i in 0..self.samples {
-                    let mut x_final = x as f64;
-                    let mut y_final = y as f64;
-
-                    if i > 0 {
-                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
-                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
-                    }
-
-                    let ray = camera.get_ray(x_final, y_final);
-                    color = color + self.cast_rays(&ray);
-                }
-
-                color = color / self.samples as f64;
-
-                *pixel = image::Rgba::<u8>([
-                    (color[0]) as u8,
-                    (color[1]) as u8,
-                    (color[2]) as u8,
-                    255,
-                ]);
-            }
+            //            for (x, y, pixel) in image.enumerate_pixels_mut() {
+            //                let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
+            //
+            //                // TODO review why the statement below produces weird results...
+            //                // for i in 0..=number_samples {
+            //                for i in 0..self.samples {
+            //                    let mut x_final = x as f64;
+            //                    let mut y_final = y as f64;
+            //
+            //                    if i > 0 {
+            //                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
+            //                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
+            //                    }
+            //
+            //                    let ray = camera.get_ray(x_final, y_final);
+            //                    color = color + self.cast_rays(&ray);
+            //                }
+            //
+            //                color = color / self.samples as f64;
+            //
+            //                *pixel = image::Rgba::<u8>([
+            //                    (color[0]) as u8,
+            //                    (color[1]) as u8,
+            //                    (color[2]) as u8,
+            //                    255,
+            //                ]);
+            //            }
             image
         }
     }

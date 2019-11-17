@@ -12,6 +12,6 @@ pub fn init_image_testing() -> PathBuf {
     
     test_path
 }
-/*
-
 // TODO Add image comparisons
+*/
+
