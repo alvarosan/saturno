@@ -13,7 +13,6 @@ pub struct Hit {
     pub normal: Array1<f64>,
 }
 
-
 /**
  * Traits in rust are how interfaces are implemented. Depending on their
  * usage, they can be statically or dinamically dispatched.

@@ -40,7 +40,7 @@ var LISTENING_PORT = os.Getenv("LISTENING_PORT")
 
 func Initialize() {
 
-        fs := http.FileServer(http.Dir("dist"))
+	fs := http.FileServer(http.Dir("dist"))
 	http.Handle("/", http.StripPrefix("", fs))
 
 	http.HandleFunc("/api/v1/render", handleServerSideApp)

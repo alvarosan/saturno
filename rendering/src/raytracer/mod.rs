@@ -34,7 +34,7 @@ impl Image {
         let stride = self.width as usize;
         let y = index / stride;
         let x = index - y as usize * stride;
-        
+
         (x as u32, y as u32)
     }
 
@@ -51,15 +51,19 @@ impl Image {
         self.data[j + 1] = color[1];
         self.data[j + 2] = color[2];
         self.data[j + 3] = color[3];
-
     }
 
     pub fn print(&self) {
         for i in 0..self.size() {
             let j = i * 4;
-            if i % 800 == 0 { 
-                println!(">> data: {0}, {1}, {2}, {3}", self.data[j],
-                    self.data[j+1], self.data[j+2], self.data[j+3]);
+            if i % 800 == 0 {
+                println!(
+                    ">> data: {0}, {1}, {2}, {3}",
+                    self.data[j],
+                    self.data[j + 1],
+                    self.data[j + 2],
+                    self.data[j + 3]
+                );
             }
         }
     }
@@ -166,11 +170,10 @@ pub mod canvas {
 
                 color = color / self.samples as f64;
 
-                image.set_pixel(i, [color[0] as u8,
-                    color[1] as u8,
-                    color[2] as u8,
-                    255]);
-
+                image.set_pixel(
+                    i,
+                    [color[0] as u8, color[1] as u8, color[2] as u8, 255],
+                );
             }
             image
         }

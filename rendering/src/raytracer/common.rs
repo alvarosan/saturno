@@ -47,7 +47,6 @@ impl Vec4 {
     }
 }
 
-
 pub struct Ray {
     pub origin: Array1<f64>,
     pub direction: Array1<f64>,

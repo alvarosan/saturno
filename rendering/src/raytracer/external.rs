@@ -7,7 +7,6 @@ use std::time::Instant;
 
 type Frame = Image;
 
-
 #[no_mangle]
 pub extern "C" fn get_frame() -> Box<Frame> {
     // TODO ensure one does not need to create a new
@@ -37,10 +36,6 @@ pub extern "C" fn get_frame() -> Box<Frame> {
     let now = Instant::now();
     let image = canvas.render_scene();
     println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
-
-    //    let image_ptr = image.clone().into_raw().as_ptr();
-    //    let ref mut out = File::create(&Path::new("test_rust.png")).unwrap();
-    //    let _result = image::ImageRgba8(image).save(out, image::PNG);
 
     // The Box smart pointer ensures the instance outlives the
     // underlying data pointer.
