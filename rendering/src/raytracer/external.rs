@@ -5,7 +5,7 @@ use crate::raytracer::Image;
 use ndarray::arr1;
 use std::time::Instant;
 
-type Frame = Image;
+pub type Frame = Image;
 
 #[no_mangle]
 pub extern "C" fn get_frame() -> Box<Frame> {
