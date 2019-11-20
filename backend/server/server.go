@@ -7,7 +7,7 @@ package server
  * https://stackoverflow.com/questions/49987098/how-to-access-a-c-pointer-array-from-golang
  */
 
-// #cgo LDFLAGS: -L /home/alvaro/workspace/source/saturno/rendering/target/release  -lrendering_c_abi
+// #cgo LDFLAGS: -L /home/alvaro/workspace/source/saturno/rendering/target/release -lrendering
 //
 // #include <stdlib.h>
 //

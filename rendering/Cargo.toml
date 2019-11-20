@@ -8,8 +8,8 @@ authors = ["Alvaro Sanchez <a.sanchez@smartreporting.de>"]
 edition = "2018"
 
 [lib]
-name = "rendering_c_abi"
-crate-type = ["cdylib"]
+name = "rendering"
+crate-type = ["cdylib", "rlib"]
 edition = "2018"
 
 [dependencies]
