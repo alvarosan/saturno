@@ -28,6 +28,7 @@
     "webpack-dev-server": "^3.9.0"
   },
   "dependencies": {
+    "@wasm-tool/wasm-pack-plugin": "^1.0.1",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "rendering_wasm": "file:../rendering_wasm/pkg/"

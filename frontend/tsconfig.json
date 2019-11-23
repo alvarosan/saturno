@@ -3,8 +3,13 @@
         "outDir": "./dist/",
         "sourceMap": true,
         "noImplicitAny": true,
-        "module": "commonjs",
-        "jsx": "react"
+        "module": "esNext",
+        "jsx": "react",
+        "esModuleInterop": true,
+        "lib": [
+            "dom",
+            "es2015"
+        ]
     }
 }
 

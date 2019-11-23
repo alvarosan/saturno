@@ -1,4 +1,5 @@
 const path = require("path");
+const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
@@ -10,14 +11,21 @@ module.exports = {
     },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js"]
+        extensions: [".ts", ".tsx", ".js", ".wasm"]
     },
     devServer: {
         historyApiFallback: true,
         stats: "minimal"
     },
     devtool: "cheap-module-eval-source-map",
-    plugins: [new HtmlWebpackPlugin()],
+    plugins: [
+        new HtmlWebpackPlugin(),
+        new WasmPackPlugin({
+            crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
+            withTypeScript: true // this is new
+        }),
+
+    ],
     module: {
         rules: [
             {
@@ -37,6 +45,10 @@ module.exports = {
                 enforce: "pre",
                 test: /\.js$/,
                 loader: "source-map-loader"
+            },
+            {
+                test: /\.wasm$/,
+                type: "webassembly/experimental"
             }
         ]
     }
