@@ -4,14 +4,14 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    entry: "./src/index.tsx",
+    entry: "./src/index.jsx",
     output: {
         filename: "[name].bundle.js",
         path: path.resolve(__dirname, "dist")
     },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js", ".wasm"]
+        extensions: [".js", ".jsx", ".wasm"]
     },
     devServer: {
         historyApiFallback: true,
@@ -47,8 +47,15 @@ module.exports = {
                 loader: "source-map-loader"
             },
             {
+                // Had to move back to js due to issues loading wasm
+                // library
+                test: /\.(js|jsx)$/,
+                exclude: /node_modules/,
+                use: ['babel-loader']
+            },
+            {
                 test: /\.wasm$/,
-                type: "webassembly/experimental"
+                    type: "webassembly/experimental"
             }
         ]
     }
