@@ -16,6 +16,7 @@ export class Viewport extends React.Component {
 
     renderLocally() {
         import("rendering_wasm").then(module => {
+            //module.greet();
             const frame = module.render();
             const imageRaw = new Uint8ClampedArray(memory.buffer, tframe.offset(), frame.size());
             this.state.image = new ImageData(imageRaw, frame.width(), frame.height());

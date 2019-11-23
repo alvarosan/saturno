@@ -2,17 +2,18 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 module.exports = {
   mode: "production",
-    entry: "./src/index.tsx",
+    entry: "./src/index.jsx",
   output: {
     filename: `[name].[hash].js`,
     path: path.resolve(__dirname, "dist")
   },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js"]
+        extensions: [".js", ".jsx", ".wasm"]
     },
   module: {
     rules: [
@@ -35,10 +36,16 @@ module.exports = {
                 ]
             },
             {
+                // Had to move back to js due to issues loading wasm
+                // library
                 enforce: "pre",
-                test: /\.js$/,
+                test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
-                use: 'babel-loader'
+                use: ['babel-loader']
+            },
+            {
+                test: /\.wasm$/,
+                type: "webassembly/experimental"
             }
     ]
   },
@@ -51,7 +58,12 @@ module.exports = {
     // the plugin to extract our css into separate .css files
     new MiniCssExtractPlugin({
       filename: "[name].[contenthash].css"
-    })
+    }),
+    // Trigger rust's wasm-pack build
+    new WasmPackPlugin({
+      crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
+      withTypeScript: true // this is new
+    }),
   ],
   devtool: "source-map" // supposedly the ideal type without bloating bundle size
 };

@@ -5,6 +5,8 @@ use wasm_bindgen::prelude::*;
 
 mod utils;
 
+use utils::set_panic_hook;
+
 //// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 //// allocator.
 //#[cfg(feature = "wee_alloc")]
@@ -23,6 +25,8 @@ pub fn greet() {
 
 #[wasm_bindgen]
 pub fn render() -> ByteStream {
+    //set_panic_hook();
+
     let frame = get_frame();
     ByteStream::new(&frame.data, frame.width, frame.height)
 }

@@ -34,19 +34,32 @@ import (
 	//"time"
 	"strconv"
 	"unsafe"
+    "regexp"
 )
 
 var LISTENING_PORT = os.Getenv("LISTENING_PORT")
+var SERVED_DIR = "dist"
+var fserver = http.FileServer(http.Dir(SERVED_DIR))
+var wasmFile = regexp.MustCompile("\\.wasm$")
 
 func Initialize() {
-
-	fs := http.FileServer(http.Dir("dist"))
-	http.Handle("/", http.StripPrefix("", fs))
-
+	http.HandleFunc("/", customFileServer)
 	http.HandleFunc("/api/v1/render", handleServerSideApp)
-	fmt.Println("> Server initialized, listening on port " + LISTENING_PORT)
 
+	fmt.Println("> Server initialized, listening on port " + LISTENING_PORT)
 	log.Fatal(http.ListenAndServe(":"+LISTENING_PORT, nil))
+}
+
+func customFileServer(w http.ResponseWriter, r *http.Request) {
+        rUri := r.RequestURI
+
+        // Override *.wasm files
+        if wasmFile.MatchString(rUri) {
+            w.Header().Set("Content-Type", "application/wasm")
+        }
+
+        //http.StripPrefix("", fserver).ServeHTTP(w, r)
+        fserver.ServeHTTP(w, r);
 }
 
 func handleServerSideApp(w http.ResponseWriter, r *http.Request) {

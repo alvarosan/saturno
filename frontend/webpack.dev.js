@@ -22,7 +22,8 @@ module.exports = {
         new HtmlWebpackPlugin(),
         new WasmPackPlugin({
             crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
-            withTypeScript: true // this is new
+            withTypeScript: false, // this is new
+            forceMode: "development"
         }),
 
     ],

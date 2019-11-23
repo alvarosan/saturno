@@ -3,7 +3,7 @@ use crate::raytracer::actor::Sphere;
 use crate::raytracer::canvas::Canvas;
 use crate::raytracer::Image;
 use ndarray::arr1;
-use std::time::Instant;
+//use std::time::Instant;
 
 pub type Frame = Image;
 
@@ -11,6 +11,7 @@ pub type Frame = Image;
 pub extern "C" fn get_frame() -> Box<Frame> {
     // TODO ensure one does not need to create a new
     // canvas every time (single allocation).
+    println!(">>> Entered get_frame !!");
     let mut canvas = Canvas {
         width: 200,
         height: 100,
@@ -33,9 +34,9 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         shading: Shading::NORMALS,
     }));
 
-    let now = Instant::now();
+    //let now = Instant::now();
     let image = canvas.render_scene();
-    println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
+    //println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
 
     // The Box smart pointer ensures the instance outlives the
     // underlying data pointer.
