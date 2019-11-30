@@ -66,6 +66,13 @@ pub struct Ray {
 }
 
 impl Ray {
+    pub fn new(origin: Array1<f64>, direction: Array1<f64>) -> Ray {
+        Ray {
+            origin,
+            direction,
+        }
+    }
+
     pub fn point_at_parameter(&self, t: f64) -> Array1<f64> {
         self.origin.clone() + t * self.direction.clone()
     }

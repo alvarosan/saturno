@@ -74,6 +74,7 @@ pub mod canvas {
 
     use rand::Rng;
 
+    use crate::raytracer::actor::random_dir_unit_shpere;
     use crate::raytracer::actor::Hit;
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
@@ -123,6 +124,20 @@ pub mod canvas {
             for actor in self.actors.iter() {
                 if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
                     hit_anything = true;
+
+                    let target = current_hit.point.clone()
+                        + current_hit.normal.clone()
+                        + random_dir_unit_shpere();
+                    let absorption: f64 = 0.5;
+
+                    let reflected_ray = Ray::new(
+                        current_hit.point.clone(),
+                        target - current_hit.point.clone(),
+                    );
+
+                    return absorption * self.cast_rays(&reflected_ray);
+                }
+                else {
                     closest_so_far = current_hit.t;
                     color = actor.render(&current_hit);
                 }
@@ -178,5 +193,4 @@ pub mod canvas {
             image
         }
     }
-
 }
