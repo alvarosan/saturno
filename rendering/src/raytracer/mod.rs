@@ -76,6 +76,7 @@ pub mod canvas {
 
     use crate::raytracer::actor::random_dir_unit_shpere;
     use crate::raytracer::actor::Hit;
+    use crate::raytracer::actor::HittableList;
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
@@ -86,11 +87,24 @@ pub mod canvas {
     pub struct Canvas {
         pub width: u32,
         pub height: u32,
-        pub actors: Vec<Box<dyn RayTraceable>>,
+        pub world: HittableList,
         pub samples: u32,
     }
 
     impl Canvas {
+
+        pub fn new(width: u32, height: u32, actors: Vec<Box<dyn RayTraceable>>,
+        samples: u32) -> Canvas {
+            let world = HittableList::new(actors);
+
+            Canvas {
+                width,
+                height,
+                world,
+                samples,
+            }
+        }
+
         /**
          *  Compute the background color based on the ray direction.
          *  Use LERP (linear interpolation), to generate a gradient on the
@@ -121,27 +135,27 @@ pub mod canvas {
             };
             let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
-            for actor in self.actors.iter() {
-                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
-                    hit_anything = true;
-
-                    let target = current_hit.point.clone()
-                        + current_hit.normal.clone()
-                        + random_dir_unit_shpere();
-                    let absorption: f64 = 0.5;
-
-                    let reflected_ray = Ray::new(
-                        current_hit.point.clone(),
-                        target - current_hit.point.clone(),
-                    );
-
-                    return absorption * self.cast_rays(&reflected_ray);
-                }
-                else {
-                    closest_so_far = current_hit.t;
-                    color = actor.render(&current_hit);
-                }
-            }
+//            for actor in self.actors.iter() {
+//                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
+//                    hit_anything = true;
+//
+//                    let target = current_hit.point.clone()
+//                        + current_hit.normal.clone()
+//                        + random_dir_unit_shpere();
+//                    let absorption: f64 = 0.5;
+//
+//                    let reflected_ray = Ray::new(
+//                        current_hit.point.clone(),
+//                        target - current_hit.point.clone(),
+//                    );
+//
+//                    return absorption * self.cast_rays(&reflected_ray);
+//                }
+//                else {
+//                    closest_so_far = current_hit.t;
+//                    color = actor.render(&current_hit);
+//                }
+//            }
 
             if !hit_anything {
                 color = self.background_color(&ray);

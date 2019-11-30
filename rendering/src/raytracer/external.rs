@@ -1,5 +1,6 @@
 use crate::raytracer::actor::Shading;
 use crate::raytracer::actor::Sphere;
+use crate::raytracer::actor::RayTraceable;
 use crate::raytracer::canvas::Canvas;
 use crate::raytracer::Image;
 use ndarray::arr1;
@@ -12,27 +13,25 @@ pub extern "C" fn get_frame() -> Box<Frame> {
     // TODO ensure one does not need to create a new
     // canvas every time (single allocation).
     println!(">>> Entered get_frame !!");
-    let mut canvas = Canvas {
-        width: 200,
-        height: 100,
-        actors: vec![],
-        samples: 10,
-    };
 
-    let ref mut actors = canvas.actors;
+
+    let mut actors = vec![];
     actors.push(Box::new(Sphere {
         center: arr1(&[0.0, 0.0, -1.0, 1.0]),
         radius: 0.5,
         color: arr1(&[255.0, 0.0, 0.0, 255.0]),
         shading: Shading::NORMALS,
-    }));
+    }) as Box<dyn RayTraceable>);
 
     actors.push(Box::new(Sphere {
         center: arr1(&[0.0, -100.5, -1.0, 1.0]),
         radius: 100.0,
         color: arr1(&[0.0, 128.0, 0.0, 255.0]),
         shading: Shading::NORMALS,
-    }));
+    }) as Box<dyn RayTraceable>);
+
+    let mut canvas = Canvas::new(200, 100, actors, 10);
+
 
     //let now = Instant::now();
     let image = canvas.render_scene();
