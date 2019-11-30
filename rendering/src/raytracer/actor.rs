@@ -1,6 +1,6 @@
 use crate::raytracer::common::Ray;
 use crate::raytracer::common::Vec4;
-use ndarray::Array1;
+use ndarray::{arr1, Array1};
 
 pub enum Shading {
     COLOR,
@@ -33,6 +33,16 @@ pub trait Hittable {
 }
 
 pub trait RayTraceable: Renderable + Hittable {}
+
+fn random_dir_unit_shpere() -> Array1<f64> {
+    let mut dir = arr1(&[0.0, 0.0, 0.0]);
+
+    while Vec4::squared_length(dir.view()) >= 1.0 {
+        dir = 2.0 * Vec4::random(-1.0, 1.0) - arr1(&[1.0, 1.0, 1.0]);
+    }
+
+    dir
+}
 
 // -----------------------------------------------------------------------------
 pub struct Sphere {
