@@ -11,6 +11,7 @@ pub struct Hit {
     pub t: f64,
     pub point: Array1<f64>,
     pub normal: Array1<f64>,
+    pub color: Array1<f64>,
 }
 
 impl Hit {
@@ -19,6 +20,7 @@ impl Hit {
             t: 0.0,
             point: arr1(&[0.0, 0.0, 0.0, 1.0]),
             normal: arr1(&[1.0, 1.0, 1.0, 0.0]),
+            color: arr1(&[0.0, 0.0, 0.0, 1.0]),
         }
     }
 
@@ -27,6 +29,7 @@ impl Hit {
             t: hit.t,
             point: hit.point.clone(),
             normal: hit.normal.clone(),
+            color: hit.color.clone(),
         }
     }
 }
@@ -122,6 +125,7 @@ impl Hittable for Sphere {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);
                 record.normal = self.compute_normal(&ray.point_at_parameter(t));
+                record.color = self.render(record);
                 return true;
             }
 
@@ -131,6 +135,7 @@ impl Hittable for Sphere {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);
                 record.normal = self.compute_normal(&ray.point_at_parameter(t));
+                record.color = self.render(record);
                 return true;
             }
         }

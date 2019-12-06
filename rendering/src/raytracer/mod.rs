@@ -76,8 +76,8 @@ pub mod canvas {
 
     use crate::raytracer::actor::random_dir_unit_shpere;
     use crate::raytracer::actor::Hit;
-    use crate::raytracer::actor::HittableList;
     use crate::raytracer::actor::Hittable;
+    use crate::raytracer::actor::HittableList;
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
@@ -93,9 +93,12 @@ pub mod canvas {
     }
 
     impl Canvas {
-
-        pub fn new(width: u32, height: u32, actors: Vec<Box<dyn RayTraceable>>,
-        samples: u32) -> Canvas {
+        pub fn new(
+            width: u32,
+            height: u32,
+            actors: Vec<Box<dyn RayTraceable>>,
+            samples: u32,
+        ) -> Canvas {
             let world = HittableList::new(actors);
 
             Canvas {
@@ -133,35 +136,36 @@ pub mod canvas {
                 t: 0.0,
                 point: arr1(&[0.0, 0.0, 0.0, 1.0]),
                 normal: arr1(&[0.0, 0.0, 0.0, 0.0]),
+                color: arr1(&[0.0, 0.0, 0.0, 1.0]),
             };
 
             let mut color = 255.0 * arr1(&[0.0, 0.0, 1.0, 1.0]);
             hit_anything = self.world.is_hit(ray, 0.0, 999.0, current_hit);
             if hit_anything {
-                return color;
+                return current_hit.color.clone();
             }
 
-//            for actor in self.actors.iter() {
-//                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
-//                    hit_anything = true;
-//
-//                    let target = current_hit.point.clone()
-//                        + current_hit.normal.clone()
-//                        + random_dir_unit_shpere();
-//                    let absorption: f64 = 0.5;
-//
-//                    let reflected_ray = Ray::new(
-//                        current_hit.point.clone(),
-//                        target - current_hit.point.clone(),
-//                    );
-//
-//                    return absorption * self.cast_rays(&reflected_ray);
-//                }
-//                else {
-//                    closest_so_far = current_hit.t;
-//                    color = actor.render(&current_hit);
-//                }
-//            }
+            //            for actor in self.actors.iter() {
+            //                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
+            //                    hit_anything = true;
+            //
+            //                    let target = current_hit.point.clone()
+            //                        + current_hit.normal.clone()
+            //                        + random_dir_unit_shpere();
+            //                    let absorption: f64 = 0.5;
+            //
+            //                    let reflected_ray = Ray::new(
+            //                        current_hit.point.clone(),
+            //                        target - current_hit.point.clone(),
+            //                    );
+            //
+            //                    return absorption * self.cast_rays(&reflected_ray);
+            //                }
+            //                else {
+            //                    closest_so_far = current_hit.t;
+            //                    color = actor.render(&current_hit);
+            //                }
+            //            }
 
             if !hit_anything {
                 color = self.background_color(&ray);
