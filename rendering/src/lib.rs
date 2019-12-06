@@ -38,7 +38,6 @@ mod tests {
         let canvas = Canvas::new(dims[0], dims[1], vec![], 1);
 
         let image = canvas.render_scene();
-        let cached = image.size();
         image.print();
         let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
         let _result = image_png.save(output_path);

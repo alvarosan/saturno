@@ -30,7 +30,7 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         shading: Shading::NORMALS,
     }) as Box<dyn RayTraceable>);
 
-    let mut canvas = Canvas::new(200, 100, actors, 10);
+    let canvas = Canvas::new(200, 100, actors, 10);
 
 
     //let now = Instant::now();

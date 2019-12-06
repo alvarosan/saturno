@@ -130,8 +130,6 @@ pub mod canvas {
             // of the closest hit (e.g. closest to the camera hence, not
             // occluded). The closest (t), becomes the maximum depth t we
             // willing to accept as a hit in the following actors.
-            let mut hit_anything = false;
-            let mut closest_so_far = 999.0;
             let current_hit = &mut Hit {
                 t: 0.0,
                 point: arr1(&[0.0, 0.0, 0.0, 1.0]),
@@ -139,10 +137,11 @@ pub mod canvas {
                 color: arr1(&[0.0, 0.0, 0.0, 1.0]),
             };
 
-            let mut color = 255.0 * arr1(&[0.0, 0.0, 1.0, 1.0]);
-            hit_anything = self.world.is_hit(ray, 0.0, 999.0, current_hit);
-            if hit_anything {
+            if self.world.is_hit(ray, 0.0, 999.0, current_hit) {
                 return current_hit.color.clone();
+            }
+            else {
+                return self.background_color(&ray);
             }
 
             //            for actor in self.actors.iter() {
@@ -166,12 +165,6 @@ pub mod canvas {
             //                    color = actor.render(&current_hit);
             //                }
             //            }
-
-            if !hit_anything {
-                color = self.background_color(&ray);
-            }
-
-            color
         }
 
         pub fn render_scene(&self) -> Image {
