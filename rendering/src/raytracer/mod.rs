@@ -77,6 +77,7 @@ pub mod canvas {
     use crate::raytracer::actor::random_dir_unit_shpere;
     use crate::raytracer::actor::Hit;
     use crate::raytracer::actor::HittableList;
+    use crate::raytracer::actor::Hittable;
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
@@ -133,7 +134,12 @@ pub mod canvas {
                 point: arr1(&[0.0, 0.0, 0.0, 1.0]),
                 normal: arr1(&[0.0, 0.0, 0.0, 0.0]),
             };
-            let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
+
+            let mut color = 255.0 * arr1(&[0.0, 0.0, 1.0, 1.0]);
+            hit_anything = self.world.is_hit(ray, 0.0, 999.0, current_hit);
+            if hit_anything {
+                return color;
+            }
 
 //            for actor in self.actors.iter() {
 //                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {

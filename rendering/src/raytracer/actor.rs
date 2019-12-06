@@ -190,7 +190,7 @@ impl Hittable for HittableList {
         let mut temp_record = Hit::new();
 
         for actor in self.actors.iter() {
-            if actor.is_hit(&ray, t_min, closest_so_far, &mut temp_record) {
+            if actor.is_hit(&ray, t_min, closest_so_far, &mut temp_record)             {
                 hit_anything = true;
                 closest_so_far = temp_record.t;
 
