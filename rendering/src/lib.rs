@@ -96,9 +96,9 @@ mod tests {
     }
 
     #[test]
-    fn render_two_spheres_normals() {
+    fn render_sphere_soil_normals() {
         let mut output_path = init_image_testing();
-        output_path.push("render_two_spheres_normals.png");
+        output_path.push("render_sphere_soil_normals.png");
 
         let mut actors = vec![];
         actors.push(Box::new(Sphere {
@@ -124,9 +124,9 @@ mod tests {
     }
 
     #[test]
-    fn render_two_spheres_antialiasing() {
+    fn render_antialiasing() {
         let mut output_path = init_image_testing();
-        output_path.push("render_two_spheres_antialiasing.png");
+        output_path.push("render_antialiasing.png");
 
         let mut actors = vec![];
         actors.push(Box::new(Sphere {
@@ -171,8 +171,8 @@ mod tests {
             shading: Shading::NORMALS,
         }) as Box<dyn RayTraceable>);
 
-        let dims: [u32; 2] = [200, 100];
-        let canvas = Canvas::new(dims[0], dims[1], actors, 1);
+        let dims: [u32; 2] = [2000, 1000];
+        let canvas = Canvas::new(dims[0], dims[1], actors, 10);
         let image = canvas.render_scene();
         let image_png = image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
         let _result = image_png.save(output_path);

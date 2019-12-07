@@ -81,6 +81,7 @@ pub mod canvas {
     use crate::raytracer::actor::RayTraceable;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
+    use crate::raytracer::common::Vec4;
     use crate::raytracer::Image;
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
@@ -115,11 +116,13 @@ pub mod canvas {
          *  y-direction (similar to front-to-back blending).
          */
         fn background_color(&self, ray: &Ray) -> Array1<f64> {
-            let dir = ray.direction.clone();
+            let dir = Vec4::normalize(ray.direction.clone());
             let param_y: f64 = 0.5 * (dir[1] + 1.0);
 
-            let white = arr1(&[0.8, 0.8, 0.8, 0.9]);
-            let blue = arr1(&[0.1, 0.2, 0.65, 0.9]);
+            //let white = arr1(&[0.8, 0.8, 0.8, 0.9]);
+            //let blue = arr1(&[0.1, 0.2, 0.65, 0.9]);
+            let white = arr1(&[1.0, 1.0, 1.0, 1.0]);
+            let blue = arr1(&[0.5, 0.7, 1.0, 1.0]);
             let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
 
             color
@@ -137,34 +140,26 @@ pub mod canvas {
                 color: arr1(&[0.0, 0.0, 0.0, 1.0]),
             };
 
-            if self.world.is_hit(ray, 0.0, 999.0, current_hit) {
-                return current_hit.color.clone();
+
+            if self.world.is_hit(ray, 0.0, std::f64::MAX, current_hit) {
+
+                    let target = current_hit.point.clone()
+                        + current_hit.normal.clone()
+                        + random_dir_unit_shpere();
+
+                    let reflected_ray = Ray::new(
+                        current_hit.point.clone(),
+                        target - current_hit.point.clone(),
+                    );
+
+                    let absorption: f64 = 0.5;
+                    //return current_hit.color.clone();
+                    return absorption * self.cast_rays(&reflected_ray);
             }
             else {
                 return self.background_color(&ray);
             }
 
-            //            for actor in self.actors.iter() {
-            //                if actor.is_hit(&ray, 0.0, closest_so_far, current_hit) {
-            //                    hit_anything = true;
-            //
-            //                    let target = current_hit.point.clone()
-            //                        + current_hit.normal.clone()
-            //                        + random_dir_unit_shpere();
-            //                    let absorption: f64 = 0.5;
-            //
-            //                    let reflected_ray = Ray::new(
-            //                        current_hit.point.clone(),
-            //                        target - current_hit.point.clone(),
-            //                    );
-            //
-            //                    return absorption * self.cast_rays(&reflected_ray);
-            //                }
-            //                else {
-            //                    closest_so_far = current_hit.t;
-            //                    color = actor.render(&current_hit);
-            //                }
-            //            }
         }
 
         pub fn render_scene(&self) -> Image {

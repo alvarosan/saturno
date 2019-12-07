@@ -46,9 +46,12 @@ impl Vec4 {
     }
 
     pub fn normalize(mut x: Array1<f64>) -> Array1<f64> {
-        let norm: f64 = Vec4::l2_norm(x.view());
-        x.mapv_inplace(|e| e / norm);
-        x
+        // TODO Need to create Vec3 and use that instead in
+        // here
+        let mut vec3 = arr1(&[x[0], x[1], x[2]]);
+        let norm: f64 = Vec4::l2_norm(vec3.view());
+        vec3.mapv_inplace(|e| e / norm);
+        arr1(&[vec3[0], vec3[1], vec3[2], x[3]])
     }
 
     // TODO This is semantically Vec3
@@ -69,7 +72,7 @@ impl Ray {
     pub fn new(origin: Array1<f64>, direction: Array1<f64>) -> Ray {
         Ray {
             origin,
-            direction,
+            direction: Vec4::normalize(direction),
         }
     }
 
