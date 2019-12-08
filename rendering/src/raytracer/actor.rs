@@ -154,7 +154,7 @@ impl Renderable for Sphere {
                 // In order to use the normal vectors (i,j,k) as (r,g,b)
                 // they need to be mapped from [-1.0, 1.0] to the
                 // [0.0, 1.0] range.
-                return 255.0 * ((normal + 1.0) * 0.5);
+                return (normal + 1.0) * 0.5;
             }
         }
     }

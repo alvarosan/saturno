@@ -19,14 +19,14 @@ pub extern "C" fn get_frame() -> Box<Frame> {
     actors.push(Box::new(Sphere {
         center: arr1(&[0.0, 0.0, -1.0, 1.0]),
         radius: 0.5,
-        color: arr1(&[255.0, 0.0, 0.0, 255.0]),
+        color: arr1(&[1.0, 0.0, 0.0, 1.0]),
         shading: Shading::NORMALS,
     }) as Box<dyn RayTraceable>);
 
     actors.push(Box::new(Sphere {
         center: arr1(&[0.0, -100.5, -1.0, 1.0]),
         radius: 100.0,
-        color: arr1(&[0.0, 128.0, 0.0, 255.0]),
+        color: arr1(&[0.0, 5.0, 0.0, 1.0]),
         shading: Shading::NORMALS,
     }) as Box<dyn RayTraceable>);
 

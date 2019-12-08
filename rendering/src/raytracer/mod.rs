@@ -123,7 +123,7 @@ pub mod canvas {
             //let blue = arr1(&[0.1, 0.2, 0.65, 0.9]);
             let white = arr1(&[1.0, 1.0, 1.0, 1.0]);
             let blue = arr1(&[0.5, 0.7, 1.0, 1.0]);
-            let color = ((1.0 - param_y) * white + param_y * blue) * 255 as f64;
+            let color = (1.0 - param_y) * white + param_y * blue;
 
             color
         }
@@ -197,12 +197,19 @@ pub mod canvas {
 
                 color = color / self.samples as f64;
 
+                self.gamma_correct(&mut color, 2.0);
+                color = color * 255.0;
+
                 image.set_pixel(
                     i,
                     [color[0] as u8, color[1] as u8, color[2] as u8, 255],
                 );
             }
             image
+        }
+
+        fn gamma_correct(&self, color: &mut Array1<f64>, gamma: f64) {
+            color.mapv_inplace(|x| x.powf(1.0/gamma) );
         }
     }
 }
