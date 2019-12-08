@@ -3,16 +3,25 @@ use crate::raytracer::actor::Sphere;
 use crate::raytracer::actor::RayTraceable;
 use crate::raytracer::canvas::Canvas;
 use crate::raytracer::Image;
+extern crate web_sys;
+
+use web_sys::console;
 use ndarray::arr1;
 //use std::time::Instant;
 
 pub type Frame = Image;
 
 #[no_mangle]
+pub extern "C" fn get_something() {
+    console::log_1(&"Something!!!!".into());
+}
+
+
+#[no_mangle]
 pub extern "C" fn get_frame() -> Box<Frame> {
     // TODO ensure one does not need to create a new
     // canvas every time (single allocation).
-    println!(">>> Entered get_frame !!");
+    //println!(">>> Entered get_frame !!");
 
 
     let mut actors = vec![];
@@ -30,11 +39,14 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         shading: Shading::NORMALS,
     }) as Box<dyn RayTraceable>);
 
+    console::log_1(&"Before canvas::new".into());
     let canvas = Canvas::new(200, 100, actors, 10);
 
 
     //let now = Instant::now();
+    console::log_1(&"Before canvas::render_scene".into());
     let image = canvas.render_scene();
+    console::log_1(&"After canvas::render_scene".into());
     //println!(">>> Rendered frame in {} ms !!", now.elapsed().as_millis());
 
     // The Box smart pointer ensures the instance outlives the

@@ -62,7 +62,8 @@ module.exports = {
     // Trigger rust's wasm-pack build
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
-      withTypeScript: true // this is new
+      withTypeScript: true, // this is new
+      forceMode: "development"
     }),
   ],
   devtool: "source-map" // supposedly the ideal type without bloating bundle size

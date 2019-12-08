@@ -86,6 +86,10 @@ pub mod canvas {
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
 
+    extern crate web_sys;
+
+    use web_sys::console;
+
     pub struct Canvas {
         pub width: u32,
         pub height: u32,
@@ -129,10 +133,6 @@ pub mod canvas {
         }
 
         fn cast_rays(&self, ray: &Ray) -> Array1<f64> {
-            // Traverse the vector of RayTraceable instances, and keep track
-            // of the closest hit (e.g. closest to the camera hence, not
-            // occluded). The closest (t), becomes the maximum depth t we
-            // willing to accept as a hit in the following actors.
             let current_hit = &mut Hit {
                 t: 0.0,
                 point: arr1(&[0.0, 0.0, 0.0, 1.0]),
@@ -141,7 +141,12 @@ pub mod canvas {
             };
 
 
-            if self.world.is_hit(ray, 0.0, std::f64::MAX, current_hit) {
+            // Some of the reflected rays hit the object they are reflecting
+            // off of not at exactly t=0, but instead at t=-0.0000001 or
+            // t=0.00000001 or whatever floating point approximation the (sphere)
+            // intersector gives us. So we need to ignore hits very near zero and
+            // we do this by raising the minimum to 0.001.
+            if self.world.is_hit(ray, 0.001, std::f64::MAX, current_hit) {
 
                     let target = current_hit.point.clone()
                         + current_hit.normal.clone()
@@ -152,9 +157,8 @@ pub mod canvas {
                         target - current_hit.point.clone(),
                     );
 
-                    let absorption: f64 = 0.5;
-                    //return current_hit.color.clone();
-                    return absorption * self.cast_rays(&reflected_ray);
+                    let reflection_coeff = current_hit.color.clone();
+                    return reflection_coeff * self.cast_rays(&reflected_ray);
             }
             else {
                 return self.background_color(&ray);
@@ -163,6 +167,9 @@ pub mod canvas {
         }
 
         pub fn render_scene(&self) -> Image {
+
+            console::log_1(&"render_canvas enter".into());
+
             let mut image = Image::new(self.width, self.height, 4);
 
             let camera = Camera::new(
@@ -174,8 +181,10 @@ pub mod canvas {
             );
 
             // TODO only create it if samples > 1.
+            console::log_1(&"render_canvas before rand. ".into());
             let mut rng = rand::thread_rng();
 
+            console::log_1(&"render_canvas after rand. ".into());
             for i in 0..image.size() {
                 let (x, y) = image.get_pixel_coordinate(i);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);

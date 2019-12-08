@@ -1,11 +1,14 @@
 extern crate rendering;
 
-use rendering::raytracer::external::get_frame;
+use rendering::raytracer::external::{get_frame, get_something};
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
 mod utils;
 
 use utils::set_panic_hook;
+
+use std::mem;
 
 //// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 //// allocator.
@@ -20,14 +23,19 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn greet() {
-    alert("Hello, {{project-name}}!");
+    alert("He, {{project-name}}! llo");
+    get_something();
 }
 
 #[wasm_bindgen]
 pub fn render() -> ByteStream {
-    //set_panic_hook();
+    set_panic_hook();
+    //greet();
 
+    //console::log_1(&"Before get_frame".into());
     let frame = get_frame();
+    set_panic_hook();
+    console::log_1(&"After external::get_frame".into());
     ByteStream::new(&frame.data, frame.width, frame.height)
 }
 
@@ -42,6 +50,7 @@ pub struct ByteStream {
 #[wasm_bindgen]
 impl ByteStream {
     pub fn new(bytes: &[u8], width: u32, height: u32) -> ByteStream {
+        let byte_size = width as usize * height as usize * 4 as usize;
         ByteStream {
             data: bytes.as_ptr(),
             size: bytes.len(),
@@ -54,7 +63,7 @@ impl ByteStream {
         self.data
     }
 
-    pub fn size(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.size
     }
 

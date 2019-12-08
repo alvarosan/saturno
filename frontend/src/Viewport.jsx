@@ -18,13 +18,19 @@ export class Viewport extends React.Component {
         import("rendering_wasm").then(module => {
             //module.greet();
             const frame = module.render();
-            const imageRaw = new Uint8ClampedArray(memory.buffer, tframe.offset(), frame.size());
+            const imageRaw = new Uint8ClampedArray(frame.data(), 0, frame.len());
+
+            console.log(">>> size, width, height: ", frame.len(), ", ", frame.width(),
+                ", ", frame.height());
+
+            console.log(">>> imageRaw: ", imageRaw);
+
             this.state.image = new ImageData(imageRaw, frame.width(), frame.height());
 
-            console.log(">> the image: ", this.state.image);
+            console.log(">>> the image: ", this.state.image);
         });
 
-        return ( <div>Rendering locally... </div> );
+        return ( <canvas ref="canvas"/> );
     }
 
 
@@ -35,7 +41,7 @@ export class Viewport extends React.Component {
     renderingModeChanged(event) {
         console.log("->>> changing rendierng mode: ", this.state.currentMode);
         this.setState({ currentMode:
-            event.target.checked ? "locally" : "remotely" });
+            event.target.checked ? "remotely" : "locally" });
         console.log("->>> changing rendierng mode after: ", this.state.currentMode);
     }
 
@@ -52,7 +58,7 @@ export class Viewport extends React.Component {
             <button className="r-btn" type="button">R</button>
             <div>
                 <input type="checkbox" name="rendering-mode" onChange={ this.renderingModeChanged }/>
-                <label for="rendering-mode">In-browser rendering</label>
+                <label for="rendering-mode">Remote rendering</label>
             </div>
             <div>
             Render time: 666.

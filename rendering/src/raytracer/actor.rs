@@ -178,7 +178,12 @@ impl HittableList {
 
 
 impl Hittable for HittableList {
-
+    /**
+     * Traverse the vector of RayTraceable instances, and keep track
+     * of the closest hit (e.g. closest to the camera hence, not
+     * occluded). The closest (t), becomes the maximum depth t we
+     * willing to accept as a hit in the following actors.
+     */
     fn is_hit(
         &self,
         ray: &Ray,
@@ -186,10 +191,6 @@ impl Hittable for HittableList {
         t_max: f64,
         record: &mut Hit,
         ) -> bool {
-        // Traverse the vector of RayTraceable instances, and keep track
-        // of the closest hit (e.g. closest to the camera hence, not
-        // occluded). The closest (t), becomes the maximum depth t we
-        // willing to accept as a hit in the following actors.
         let mut hit_anything = false;
         let mut closest_so_far = t_max;
         let mut temp_record = Hit::new();

@@ -1,5 +1,5 @@
 const path = require("path");
-const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+//const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
@@ -20,11 +20,12 @@ module.exports = {
     devtool: "cheap-module-eval-source-map",
     plugins: [
         new HtmlWebpackPlugin(),
-        new WasmPackPlugin({
-            crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
-            withTypeScript: false, // this is new
-            forceMode: "development"
-        }),
+//        new WasmPackPlugin({
+//            crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
+//            extraArgs: "--no-typescript",
+//            withTypeScript: false, // this is new
+//            forceMode: "development"
+//        }),
 
     ],
     module: {
