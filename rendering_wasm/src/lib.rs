@@ -45,6 +45,7 @@ pub struct ByteStream {
     width: u32,
     height: u32,
     size: usize,
+    byte_size: usize,
 }
 
 #[wasm_bindgen]
@@ -52,6 +53,7 @@ impl ByteStream {
     pub fn new(bytes: &[u8], width: u32, height: u32) -> ByteStream {
         let byte_size = width as usize * height as usize * 4 as usize;
         ByteStream {
+            byte_size: byte_size,
             data: bytes.as_ptr(),
             size: bytes.len(),
             width,
@@ -65,6 +67,10 @@ impl ByteStream {
 
     pub fn len(&self) -> usize {
         self.size
+    }
+
+    pub fn byte_size(&self) -> usize {
+        self.byte_size
     }
 
     pub fn width(&self) -> u32 {
