@@ -54,12 +54,20 @@ fn compute_transformation(
 
 impl Camera {
     pub fn new(
-        lower_left: Array1<f64>,
-        upper_right: Array1<f64>,
+        vertical_fov: f64,
         resolution_x: u32,
         resolution_y: u32,
         origin: Array1<f64>,
     ) -> Camera {
+
+        let theta = vertical_fov * std::f64::consts::PI / 180.0;
+        let aspect = resolution_x as f64 / resolution_y as f64;
+        let half_height = (theta / 2.0).tan();
+        let half_width = aspect * half_height;
+
+        let lower_left = arr1(&[-half_width, -half_height, -1.0, 1.0]);
+        let upper_right = arr1(&[half_width, half_height, -1.0, 1.0]);
+
         let transformation = compute_transformation(
             lower_left.clone(),
             upper_right.clone(),

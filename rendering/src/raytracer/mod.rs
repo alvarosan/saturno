@@ -167,8 +167,7 @@ pub mod canvas {
             let mut image = Image::new(self.width, self.height, 4);
 
             let camera = Camera::new(
-                arr1(&[-2.0, -1.0, -1.0, 1.0]),
-                arr1(&[2.0, 1.0, -1.0, 1.0]),
+                70.0,
                 self.width,
                 self.height,
                 arr1(&[0.0, 0.0, 0.0, 1.0]),
