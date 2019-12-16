@@ -2,7 +2,7 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+//const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 module.exports = {
   mode: "production",
@@ -59,12 +59,12 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "[name].[contenthash].css"
     }),
-    // Trigger rust's wasm-pack build
-    new WasmPackPlugin({
-      crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
-      withTypeScript: true, // this is new
-      forceMode: "development"
-    }),
+//    // Trigger rust's wasm-pack build
+//    new WasmPackPlugin({
+//      crateDirectory: path.resolve(__dirname, "../rendering_wasm"),
+//      withTypeScript: true, // this is new
+//      forceMode: "development"
+//    }),
   ],
   devtool: "source-map" // supposedly the ideal type without bloating bundle size
 };

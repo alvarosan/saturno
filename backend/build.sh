@@ -5,6 +5,10 @@ GO_DIR=`pwd`
 cd $GO_DIR/../rendering/ && \
 cargo build --release
 
+// Disabled WasmPackPlugin
+cd $GO_DIR/../rendering_wasm/ && \
+wasm-pack build
+
 cd $GO_DIR/../frontend/ && \
 yarn install && yarn prod
 

@@ -86,10 +86,6 @@ pub mod canvas {
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
 
-    extern crate web_sys;
-
-    use web_sys::console;
-
     pub struct Canvas {
         pub width: u32,
         pub height: u32,
@@ -168,8 +164,6 @@ pub mod canvas {
 
         pub fn render_scene(&self) -> Image {
 
-            console::log_1(&"render_canvas enter".into());
-
             let mut image = Image::new(self.width, self.height, 4);
 
             let camera = Camera::new(
@@ -181,10 +175,8 @@ pub mod canvas {
             );
 
             // TODO only create it if samples > 1.
-            console::log_1(&"render_canvas before rand. ".into());
             let mut rng = rand::thread_rng();
 
-            console::log_1(&"render_canvas after rand. ".into());
             for i in 0..image.size() {
                 let (x, y) = image.get_pixel_coordinate(i);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);

@@ -1,6 +1,6 @@
 extern crate rendering;
 
-use rendering::raytracer::external::{get_frame, get_something};
+use rendering::raytracer::external::{get_frame};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -24,7 +24,6 @@ extern "C" {
 #[wasm_bindgen]
 pub fn greet() {
     alert("He, {{project-name}}! llo");
-    get_something();
 }
 
 #[wasm_bindgen]

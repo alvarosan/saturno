@@ -4,6 +4,9 @@ import * as React from 'react';
 
 import "./Viewport.css";
 
+let wasm_promise = import("rendering_wasm")
+    
+
 export class Viewport extends React.Component {
     constructor(props) {
         super(props);
@@ -11,47 +14,29 @@ export class Viewport extends React.Component {
         this.state = {
             currentMode: props.mode,
             image: null,
+            module: null,
         };
+
+        wasm_promise.then(module => {
+            this.state.module = module
+        });
 
         this.renderingModeChanged = this.renderingModeChanged.bind(this);
     }
 
     renderLocally() {
-        import("rendering_wasm").then(module => {
 
-            //module.greet();
-            const frame = module.render()
-
-            console.log(">>> module: ", module)
-            console.log(">>> memory: ", module.wasm_memory.buffer)
-//            console.log(">>> frame.data: ", frame.data())
-
-// TODO This should help
-//
-//            https://www.hellorust.com/demos/canvas/index.html
-
-//            const casted = ctypes.cast(frame.data(),
-//                ctypes.uint8_t.array(frame.len()).ptr).contents
-//
-//            console.log(">>> casted: ", casted)
-
-//            const buff = new ArrayBuffer(frame.len())
-            const imageRaw = new Uint8ClampedArray(module.wasm_memory.buffer, // frame.data(),
+        // Need to import _bg to get a hold on the wasm memory buffer
+        import ("rendering_wasm/rendering_wasm_bg.wasm").then(module => {
+            const frame = this.state.module.render()
+            const imageRaw = new Uint8ClampedArray(module.memory.buffer,
                 frame.data(), frame.len())
-
-            console.log(">>> size, width, height: ", frame.len(), ", ", frame.width(),
-                ", ", frame.height());
-
-            console.log(">>> imageRaw: ", imageRaw);
-
             this.state.image = new ImageData(imageRaw, frame.width(), frame.height());
             const context = this.refs.local_canvas.getContext('2d');
             context.putImageData(this.state.image, 0, 0);
-
-            console.log(">>> the image: ", this.state.image);
         });
 
-        return ( <canvas ref="local_canvas"/> );
+        return ( <canvas className="viewport" ref="local_canvas"/> );
     }
 
     renderRemotely() {
@@ -59,10 +44,8 @@ export class Viewport extends React.Component {
     }
 
     renderingModeChanged(event) {
-        console.log("->>> changing rendierng mode: ", this.state.currentMode);
         this.setState({ currentMode:
             event.target.checked ? "remotely" : "locally" });
-        console.log("->>> changing rendierng mode after: ", this.state.currentMode);
     }
 
     render() {
