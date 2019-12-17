@@ -45,7 +45,7 @@ impl Vec4 {
         x.dot(&x)
     }
 
-    pub fn normalize(mut x: Array1<f64>) -> Array1<f64> {
+    pub fn normalize(x: Array1<f64>) -> Array1<f64> {
         // TODO Need to create Vec3 and use that instead in
         // here
         let mut vec3 = arr1(&[x[0], x[1], x[2]]);
@@ -57,9 +57,20 @@ impl Vec4 {
     // TODO This is semantically Vec3
     pub fn random(min: f64, max: f64) -> Array1<f64> {
         let mut rng = rand::thread_rng();
-        arr1(&[rng.gen_range(min, max),
+        arr1(&[
             rng.gen_range(min, max),
-            rng.gen_range(min, max)])
+            rng.gen_range(min, max),
+            rng.gen_range(min, max),
+        ])
+    }
+
+    pub fn cross(a: Array1<f64>, b: Array1<f64>) -> Array1<f64> {
+        let mut c = arr1(&[0.0, 0.0, 0.0, 0.0]);
+        c[0] = a[1] * b[2] - a[2] * b[1];
+        c[1] = -a[0] * b[2] + a[2] * b[0];
+        c[2] = a[0] * b[1] - a[1] * b[0];
+
+        c
     }
 }
 

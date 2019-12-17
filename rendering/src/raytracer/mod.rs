@@ -3,6 +3,7 @@ pub mod camera;
 pub mod common;
 pub mod common_testing;
 pub mod external;
+pub mod material;
 
 pub struct Image {
     pub width: u32,
@@ -44,8 +45,6 @@ impl Image {
     }
 
     pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
-        //println!(">> Color: {0}, {1}, {2}, {3}", color[0], color[1], color[2], color[3]);
-
         let j = index * self.chan as usize;
         self.data[j] = color[0];
         self.data[j + 1] = color[1];
@@ -74,7 +73,6 @@ pub mod canvas {
 
     use rand::Rng;
 
-    use crate::raytracer::actor::random_dir_unit_shpere;
     use crate::raytracer::actor::Hit;
     use crate::raytracer::actor::Hittable;
     use crate::raytracer::actor::HittableList;
@@ -91,6 +89,7 @@ pub mod canvas {
         pub height: u32,
         pub world: HittableList,
         pub samples: u32,
+        camera: Camera,
     }
 
     impl Canvas {
@@ -99,6 +98,7 @@ pub mod canvas {
             height: u32,
             actors: Vec<Box<dyn RayTraceable>>,
             samples: u32,
+            camera: Camera,
         ) -> Canvas {
             let world = HittableList::new(actors);
 
@@ -107,6 +107,7 @@ pub mod canvas {
                 height,
                 world,
                 samples,
+                camera,
             }
         }
 
@@ -128,14 +129,8 @@ pub mod canvas {
             color
         }
 
-        fn cast_rays(&self, ray: &Ray) -> Array1<f64> {
-            let current_hit = &mut Hit {
-                t: 0.0,
-                point: arr1(&[0.0, 0.0, 0.0, 1.0]),
-                normal: arr1(&[0.0, 0.0, 0.0, 0.0]),
-                color: arr1(&[0.0, 0.0, 0.0, 1.0]),
-            };
-
+        fn cast_rays(&self, ray: &Ray, depth: u32) -> Array1<f64> {
+            let current_hit = &mut Hit::new();
 
             // Some of the reflected rays hit the object they are reflecting
             // off of not at exactly t=0, but instead at t=-0.0000001 or
@@ -143,35 +138,42 @@ pub mod canvas {
             // intersector gives us. So we need to ignore hits very near zero and
             // we do this by raising the minimum to 0.001.
             if self.world.is_hit(ray, 0.001, std::f64::MAX, current_hit) {
+                let mut attenuation = arr1(&[0.0, 0.0, 0.0, 1.0]);
+                let mut scattered = Ray::new(
+                    arr1(&[0.0, 0.0, 0.0, 1.0]),
+                    arr1(&[0.0, 0.0, 0.0, 0.0]),
+                );
 
-                    let target = current_hit.point.clone()
-                        + current_hit.normal.clone()
-                        + random_dir_unit_shpere();
+                /*
+                if crate::raytracer::material::is_test_ray(&ray) {
+                    println!(">>> Ray depth: {}", depth);
+                    panic!("this is a terrible mistake!");
+                }
+                */
 
-                    let reflected_ray = Ray::new(
-                        current_hit.point.clone(),
-                        target - current_hit.point.clone(),
-                    );
+                if depth < 50 && current_hit.material.scatter(
+                    &ray,
+                    &current_hit,
+                    &mut attenuation,
+                    &mut scattered,
+                )  {
+                    return attenuation * self.cast_rays(&scattered, depth+1);
+                }
+                else {
+                    // TODO This is necessary for the primary-ray material to work. (perhaps with
+                    // depth == 1?)
+                    //return attenuation;
+                    //println!(">>> Scatter false - depth: {}", depth);
+                    return arr1(&[0.0, 0.0, 0.0, 0.0]);
+                }
 
-                    let reflection_coeff = current_hit.color.clone();
-                    return reflection_coeff * self.cast_rays(&reflected_ray);
-            }
-            else {
+            } else {
                 return self.background_color(&ray);
             }
-
         }
 
         pub fn render_scene(&self) -> Image {
-
             let mut image = Image::new(self.width, self.height, 4);
-
-            let camera = Camera::new(
-                70.0,
-                self.width,
-                self.height,
-                arr1(&[0.0, 0.0, 0.0, 1.0]),
-            );
 
             // TODO only create it if samples > 1.
             let mut rng = rand::thread_rng();
@@ -191,8 +193,25 @@ pub mod canvas {
                         y_final = y as f64 + rng.gen_range(0.0, 0.999999);
                     }
 
-                    let ray = camera.get_ray(x_final, y_final);
-                    color = color + self.cast_rays(&ray);
+                    let ray = self.camera.get_ray(x_final, y_final);
+
+                    /*
+                    if x == 100 && y == 50 {
+                        println!("Dir center: {}", ray.direction);
+                    }
+                    */
+
+                    //println!(">>> x, y: {}, {}", x_final, y_final);
+
+                    /*
+                    if crate::raytracer::material::is_test_ray(&ray) {
+                        println!(">>> Primary !!!!!!!");
+                        color = arr1(&[0.0, 0.0, 1.0, 1.0]);
+                    }
+                    else {
+                    */
+                        color = color + self.cast_rays(&ray, 1);
+                    //}
                 }
 
                 color = color / self.samples as f64;
@@ -209,7 +228,7 @@ pub mod canvas {
         }
 
         fn gamma_correct(&self, color: &mut Array1<f64>, gamma: f64) {
-            color.mapv_inplace(|x| x.powf(1.0/gamma) );
+            color.mapv_inplace(|x| x.powf(1.0 / gamma));
         }
     }
 }
