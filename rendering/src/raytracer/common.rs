@@ -1,5 +1,4 @@
 use ndarray::{arr1, Array1, ArrayView1};
-use rand::Rng;
 
 pub struct Vec4 {
     data: Array1<f64>,
@@ -37,7 +36,7 @@ impl Vec4 {
         }
     }
 
-    fn l2_norm(x: ArrayView1<f64>) -> f64 {
+    pub fn l2_norm(x: ArrayView1<f64>) -> f64 {
         x.dot(&x).sqrt()
     }
 
@@ -52,16 +51,6 @@ impl Vec4 {
         let norm: f64 = Vec4::l2_norm(vec3.view());
         vec3.mapv_inplace(|e| e / norm);
         arr1(&[vec3[0], vec3[1], vec3[2], x[3]])
-    }
-
-    // TODO This is semantically Vec3
-    pub fn random(min: f64, max: f64) -> Array1<f64> {
-        let mut rng = rand::thread_rng();
-        arr1(&[
-            rng.gen_range(min, max),
-            rng.gen_range(min, max),
-            rng.gen_range(min, max),
-        ])
     }
 
     pub fn cross(a: Array1<f64>, b: Array1<f64>) -> Array1<f64> {

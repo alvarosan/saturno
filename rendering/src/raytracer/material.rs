@@ -3,16 +3,24 @@ use crate::raytracer::common::Ray;
 use crate::raytracer::common::Vec4;
 
 use ndarray::{arr1, Array1};
-
+use rand::Rng;
 
 fn random_dir_unit_sphere() -> Array1<f64> {
     let mut dir = arr1(&[std::f64::MAX, 0.0, 0.0]);
+    let mut rng = rand::thread_rng();
+    let min = -1.0;
+    let max = 1.0;
 
     while Vec4::squared_length(dir.view()) >= 1.0 {
-        dir = Vec4::random(-1.0, 1.0);
+        dir = arr1(&[
+            rng.gen_range(min, max),
+            rng.gen_range(min, max),
+            rng.gen_range(min, max),
+            0.0,
+        ]);
     }
 
-    arr1(&[dir[0], dir[1], dir[2], 0.0])
+    dir
 }
 
 /**
@@ -26,6 +34,19 @@ pub fn reflect(fuzz: f64, incident: &Ray, hit: &Hit) -> Ray {
 
     Ray::new(hit.point.clone(), dir +
              fuzz * super::material::random_dir_unit_sphere())
+}
+
+/**
+ * Now real glass has reflectivity that varies with angle-- look at a window
+ * at a steep angle and itbecomes a mirror. There is a big ugly equation
+ * (Fresnel ?) for that, but almost everybody uses a simple and surprisingly
+ * simple polynomial approximation by Christophe Schlick.
+ */
+pub fn schlick(cosine: f64, ref_idx: f64) -> f64 {
+    let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    r0 = r0 * r0;
+
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
 #[derive(Clone)]
@@ -240,15 +261,6 @@ pub struct Dielectric {
     pub refraction_idx_ext: f64,
 }
 
-//TODO Check qualitativley htat the normals look continuous in the
-//back of the sphere
-pub fn is_test_ray(ray: &Ray) -> bool {
-        let test_dir = arr1(&[-0.6558966847430886, -0.09623168735882363, -0.7486915261248114, 0.0]);
-
-        //let test_dir = arr1(&[0.0, 0.0, -1.0, 0.0]);
-        test_dir == ray.direction
-}
-
 impl Dielectric {
     pub fn new(color: Array1<f64>, shading: Shading, refraction_idx: f64) -> Dielectric {
         // Air
@@ -265,36 +277,13 @@ impl Dielectric {
      * n_i ( Ray_i - Cos(Theta_i) Norm ) = n_t ( Ray_t + Cos(Theta_t) Norm )
      */
     pub fn refract(&self, incident: &Ray, normal: Array1<f64>, hit: &Hit, ni_over_nt: f64, refracted: &mut Ray) -> bool {
-        // TODO!!!! the dot products might be  applying the 0s too!!!
-        // this is the problem of using the whole vector... (homogeneous)
-        //let ri_dot_normal = incident.direction.dot(&normal);
-        //println!(">>> slice {}", incident.direction.slice(s![0..3]));
-        let ri_dot_normal = incident.direction.slice(s![0..3]).dot(&normal.slice(s![0..3]));
-
-        //println!(">>> norms {} , {}", incident.direction.dot(&incident.direction).sqrt(), normal.dot(&normal).sqrt());
+        let ri_dot_normal = incident.direction.dot(&normal);
 
         // Discriminant
         let sq_cos_theta_t = 1.0 -
-            ni_over_nt.powi(2) * (1.0 - ri_dot_normal.powi(2));
-
-        if is_test_ray(incident) {
-            println!(">>>! {} {} {} {} {}", ri_dot_normal, ri_dot_normal.powi(2), ni_over_nt, ni_over_nt.powi(2), sq_cos_theta_t);
-            // println!(">>> sqcostheta_t {}", sq_cos_theta_t);
-            
-        }
-            if is_test_ray(incident) {
-                let sinthetasq = -ri_dot_normal.powi(2) + 1.0;
-                let mut angle = 666.666;
-                if sinthetasq > 0.0 {
-                    angle = sinthetasq.sqrt().asin() * 180.0 / std::f64::consts::PI;
-                }
-                let anglecos = ri_dot_normal.acos() * 180.0 / std::f64::consts::PI;
-                println!(">>> angle ri_normal (sin),  (cos): {} , {}", angle, anglecos);
-
-            }
+            ni_over_nt * ni_over_nt * (1.0 - ri_dot_normal * ri_dot_normal);
 
         if sq_cos_theta_t > 0.0 {
-            //println!(">>> point: {}, dir: {}", hit.point, dir);
             let dir =
                 ni_over_nt * (incident.direction.clone() - normal.clone() * ri_dot_normal) -
                 normal * sq_cos_theta_t.sqrt();
@@ -304,7 +293,6 @@ impl Dielectric {
             return true;
         }
 
-        //println!(">>> sq_cos_theta_t: {}", sq_cos_theta_t);
         false
     }
 }
@@ -320,37 +308,36 @@ impl Scattering for Dielectric {
 
         let mut outward_normal = hit_record.normal.clone();
         let mut ni_over_nt = self.refraction_idx_ext / self.refraction_idx;
+        let mut cosine = -hit_record.normal.dot(&incident.direction) /
+            Vec4::l2_norm(incident.direction.view());
+        let reflect_prob: f64;
 
         // Change signs and invert refraction ratio if the normal points 
         // inwards (default outwards; but when the ray exits then it needs
         // to be inverted).
         if hit_record.normal.dot(&incident.direction) > 0.0 {
-            if is_test_ray(incident) {
-                println!(">>> definitely exiting");
-            }
-
             outward_normal = -hit_record.normal.clone();
             ni_over_nt = self.refraction_idx / self.refraction_idx_ext;
+            cosine = self.refraction_idx *
+                hit_record.normal.dot(&incident.direction) /
+                Vec4::l2_norm(incident.direction.view());
         }
-
         *attenuation = self.color(&hit_record);
-        let myscat = Ray::new(scattered.origin.clone(), scattered.direction.clone());
+
+        let reflected = reflect(0.0, &incident, hit_record);
         if self.refract(&incident, outward_normal, hit_record, ni_over_nt,
                         scattered) {
-            return true;
+            reflect_prob =  schlick(cosine, self.refraction_idx);
         }
         else {
-            *scattered = reflect(0.0, &incident, hit_record);
-            if is_test_ray(incident) {
-                println!(">>> refract false!");
-            }
-            //println!(">>> incident: {}", incident.direction);
-            //panic!("this is a terrible mistake!");
-            return  false;
+            reflect_prob = 1.0;
         }
 
-
-
+        let mut rng = rand::thread_rng();
+        if rng.gen_range(0.0, 1.0) < reflect_prob {
+            *scattered = reflected;
+        }
+        true
     }
 
     fn color(&self, hit: &Hit) -> Array1<f64> {

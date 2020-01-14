@@ -1,9 +1,6 @@
 //pub mod mandelbrot;
 pub mod raytracer;
 
-#[macro_use(s)]
-extern crate ndarray;
-
 #[cfg(test)]
 mod tests {
     use crate::raytracer::actor::RayTraceable;
@@ -50,6 +47,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], vec![], 1, camera);
 
@@ -84,6 +82,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -110,12 +109,13 @@ mod tests {
 
         let dims: [u32; 2] = [200, 100];
         let camera = Camera::new(
-            90.0,
+            50.0,
             dims[0],
             dims[1],
-            arr1(&[0.0, 0.0, 0.0, 1.0]),
+            arr1(&[-2.0, 2.0, 1.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -144,19 +144,20 @@ mod tests {
             center: arr1(&[0.0, -100.5, -1.0, 1.0]),
             radius: 100.0,
             material: Box::new(Primary::new(
-                arr1(&[0.0, 0.5, 0.0, 1.0]),
-                Shading::NORMALS,
+                arr1(&[0.5, 0.5, 0.5, 1.0]),
+                Shading::COLOR,
             )),
         }) as Box<dyn RayTraceable>);
 
         let dims: [u32; 2] = [200, 100];
         let camera = Camera::new(
-            90.0,
+            50.0,
             dims[0],
             dims[1],
-            arr1(&[0.0, 0.0, 0.0, 1.0]),
+            arr1(&[0.0, 0.0, -3.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 10, camera);
         let image = canvas.render_scene();
@@ -198,6 +199,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -258,6 +260,7 @@ mod tests {
             arr1(&[-2.0, 2.0, 1.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 5, camera);
@@ -302,6 +305,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -364,6 +368,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
         );
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 3, camera);
@@ -392,15 +397,13 @@ mod tests {
 
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
-            radius: 0.5,
-            material: Box::new(Dielectric::new(
-                arr1(&[1.0, 1.0, 1.0, 1.0]),
+            radius: 0.1,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.1, 0.2, 0.5, 1.0]),
                 Shading::COLOR,
-                1.5,
             )),
         }) as Box<dyn RayTraceable>);
 
-        /*
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
@@ -409,9 +412,7 @@ mod tests {
                 Shading::COLOR,
             )),
         }) as Box<dyn RayTraceable>);
-        */
 
-        /*
         actors.push(Box::new(Sphere {
             center: arr1(&[1.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
@@ -422,12 +423,11 @@ mod tests {
             )),
         }) as Box<dyn RayTraceable>);
 
-        */
         actors.push(Box::new(Sphere {
             center: arr1(&[-1.0, 0.0, -1.0, 1.0]),
             radius: 0.5,
             material: Box::new(Dielectric::new(
-                arr1(&[1.0, 1.0, 1.0, 1.0]),
+                arr1(&[1.0, 1.0, 1.0, 0.0]),
                 Shading::COLOR,
                 1.5,
             )),
@@ -441,9 +441,177 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
+            0.001,
         );
 
-        let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
+        let image = canvas.render_scene();
+        let image_png =
+            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_dielectric_bubble() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_dielectric_bubble.png");
+
+        let mut actors = vec![];
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, -100.5, -1.0, 1.0]),
+            radius: 100.0,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.8, 0.8, 0.0, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.1, 0.2, 0.5, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.1, 0.2, 0.5, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[1.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Metal::new(
+                arr1(&[0.8, 0.6, 0.2, 1.0]),
+                Shading::COLOR,
+                0.0,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[-1.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Dielectric::new(
+                arr1(&[1.0, 1.0, 1.0, 0.0]),
+                Shading::COLOR,
+                1.5,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[-1.0, 0.0, -1.0, 1.0]),
+            radius: -0.45,
+            material: Box::new(Dielectric::new(
+                arr1(&[1.0, 1.0, 1.0, 0.0]),
+                Shading::COLOR,
+                1.5,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        let dims: [u32; 2] = [200, 100];
+        let camera = Camera::new(
+            30.0,
+            dims[0],
+            dims[1],
+            arr1(&[-2.0, 2.0, 1.0, 1.0]),
+            arr1(&[0.0, 0.0, -1.0, 1.0]),
+            arr1(&[0.0, 1.0, 0.0, 0.0]),
+            0.5,
+        );
+
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
+        let image = canvas.render_scene();
+        let image_png =
+            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+        let _result = image_png.save(output_path);
+        assert_eq!(1.0, 1.0);
+    }
+
+    #[test]
+    fn render_depth_of_field() {
+        let mut output_path = init_image_testing();
+        output_path.push("render_depth_of_field.png");
+
+        let mut actors = vec![];
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, -100.5, -1.0, 1.0]),
+            radius: 100.0,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.8, 0.8, 0.0, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.1, 0.2, 0.5, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[0.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Lambertian::new(
+                arr1(&[0.1, 0.2, 0.5, 1.0]),
+                Shading::COLOR,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[1.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Metal::new(
+                arr1(&[0.8, 0.6, 0.2, 1.0]),
+                Shading::COLOR,
+                0.0,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[-1.0, 0.0, -1.0, 1.0]),
+            radius: 0.5,
+            material: Box::new(Dielectric::new(
+                arr1(&[1.0, 1.0, 1.0, 0.0]),
+                Shading::COLOR,
+                1.5,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        actors.push(Box::new(Sphere {
+            center: arr1(&[-1.0, 0.0, -1.0, 1.0]),
+            radius: -0.45,
+            material: Box::new(Dielectric::new(
+                arr1(&[1.0, 1.0, 1.0, 0.0]),
+                Shading::COLOR,
+                1.5,
+            )),
+        }) as Box<dyn RayTraceable>);
+
+        let dims: [u32; 2] = [200, 100];
+        let camera = Camera::new(
+            20.0,
+            dims[0],
+            dims[1],
+            arr1(&[3.0, 3.0, 2.0, 1.0]),
+            //arr1(&[0.0, 0.0, 0.0, 1.0]),
+            arr1(&[0.0, 0.0, -1.0, 1.0]),
+            arr1(&[0.0, 1.0, 0.0, 0.0]),
+            2.0,
+        );
+
+        let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();

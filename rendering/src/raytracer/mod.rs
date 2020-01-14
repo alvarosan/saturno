@@ -137,19 +137,12 @@ pub mod canvas {
             // t=0.00000001 or whatever floating point approximation the (sphere)
             // intersector gives us. So we need to ignore hits very near zero and
             // we do this by raising the minimum to 0.001.
-            if self.world.is_hit(ray, 0.001, std::f64::MAX, current_hit) {
+            if self.world.is_hit(ray, 0.0001, std::f64::MAX, current_hit) {
                 let mut attenuation = arr1(&[0.0, 0.0, 0.0, 1.0]);
                 let mut scattered = Ray::new(
                     arr1(&[0.0, 0.0, 0.0, 1.0]),
                     arr1(&[0.0, 0.0, 0.0, 0.0]),
                 );
-
-                /*
-                if crate::raytracer::material::is_test_ray(&ray) {
-                    println!(">>> Ray depth: {}", depth);
-                    panic!("this is a terrible mistake!");
-                }
-                */
 
                 if depth < 50 && current_hit.material.scatter(
                     &ray,
@@ -160,10 +153,9 @@ pub mod canvas {
                     return attenuation * self.cast_rays(&scattered, depth+1);
                 }
                 else {
-                    // TODO This is necessary for the primary-ray material to work. (perhaps with
-                    // depth == 1?)
+                    // TODO This is necessary for the primary-ray material
+                    // to work. (perhaps with depth == 1?)
                     //return attenuation;
-                    //println!(">>> Scatter false - depth: {}", depth);
                     return arr1(&[0.0, 0.0, 0.0, 0.0]);
                 }
 
@@ -195,23 +187,7 @@ pub mod canvas {
 
                     let ray = self.camera.get_ray(x_final, y_final);
 
-                    /*
-                    if x == 100 && y == 50 {
-                        println!("Dir center: {}", ray.direction);
-                    }
-                    */
-
-                    //println!(">>> x, y: {}, {}", x_final, y_final);
-
-                    /*
-                    if crate::raytracer::material::is_test_ray(&ray) {
-                        println!(">>> Primary !!!!!!!");
-                        color = arr1(&[0.0, 0.0, 1.0, 1.0]);
-                    }
-                    else {
-                    */
-                        color = color + self.cast_rays(&ray, 1);
-                    //}
+                    color = color + self.cast_rays(&ray, 1);
                 }
 
                 color = color / self.samples as f64;

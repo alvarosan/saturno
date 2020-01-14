@@ -38,13 +38,16 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         )),
     }) as Box<dyn RayTraceable>);
 
+    let from = arr1(&[0.0, 0.0, 0.0, 1.0]);
+    let at = arr1(&[0.0, 0.0, -1.0, 1.0]);
     let camera = Camera::new(
         90.0,
         200,
         100,
-        arr1(&[0.0, 0.0, 0.0, 1.0]),
-        arr1(&[0.0, 0.0, -1.0, 1.0]),
+        from,
+        at,
         arr1(&[0.0, 1.0, 0.0, 0.0]),
+        2.0,
     );
 
     let canvas = Canvas::new(200, 100, actors, 10, camera);

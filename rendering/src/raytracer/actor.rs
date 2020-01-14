@@ -1,5 +1,4 @@
 use crate::raytracer::common::Ray;
-use crate::raytracer::common::Vec4;
 use crate::raytracer::material::Lambertian;
 use crate::raytracer::material::Scattering;
 use crate::raytracer::material::Shading;
@@ -84,9 +83,8 @@ impl Sphere {
      * is [-1.0, 1.0].
      */
     fn compute_normal(&self, point_sphere: &Array1<f64>) -> Array1<f64> {
-        let n = point_sphere.clone() - self.center.clone();
-        //println!(">>> norm {}", Vec4::normalize(n.clone()));
-        Vec4::normalize(n)
+        let n = (point_sphere.clone() - self.center.clone()) / self.radius;
+        n
     }
 }
 
@@ -114,13 +112,13 @@ impl Hittable for Sphere {
     ) -> bool {
         let oc = ray.origin.clone() - self.center.clone();
         let a = ray.direction.dot(&ray.direction);
-        let b = 2.0 * oc.dot(&ray.direction);
+        let b = oc.dot(&ray.direction);
         let c = oc.dot(&oc) - self.radius * self.radius;
-        let discriminant = b * b - 4.0 * a * c;
+        let discriminant = b * b -  a * c;
 
         if discriminant > 0.0 {
             // Solution (-) In range ?
-            let t = (-b - discriminant.sqrt()) / (2.0 * a);
+            let t = (-b - discriminant.sqrt()) / ( a);
             if t_min < t && t < t_max {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);
@@ -130,7 +128,7 @@ impl Hittable for Sphere {
             }
 
             // Solution (+) In range ?
-            let t = (-b + discriminant.sqrt()) / (2.0 * a);
+            let t = (-b + discriminant.sqrt()) / ( a);
             if t_min < t && t < t_max {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);
