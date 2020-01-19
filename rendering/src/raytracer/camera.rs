@@ -14,47 +14,34 @@ pub struct Camera {
     pub resolution_y: u32,
     pub origin: Array1<f64>,
     transformation: Array2<f64>,
-    eye_to_world: Array2<f64>,
+    camera_to_world: Array2<f64>,
     lens_radius: f64,
 }
 
 /**
  *  Transform image pixel (i,j) to image plane coordinates (u, v).
  */
-fn compute_transformation(
+fn compute_image_to_world(
     resolution_x: u32,
     resolution_y: u32,
-    u: Array1<f64>,
-    v: Array1<f64>,
-    w: Array1<f64>,
-    origin: Array1<f64>,
     half_width: f64,
     half_height: f64,
-    focal_length: f64,
+    focus_dist: f64,
+    to_world: &Array2<f64>,
 ) -> Array2<f64> {
     let spacing = arr1(&[
-        focal_length * half_width * 2.0 / resolution_x as f64,
-        focal_length * half_height * 2.0 / resolution_y as f64,
+        half_width * 2.0 / resolution_x as f64,
+        half_height * 2.0 / resolution_y as f64,
     ]);
 
     // Lower-left corner is the image-plane's origin
     // (-hw, -hl, -1.0)
     let to_image_plane = arr2(&[
-        [spacing[0], 0.0, 0.0, -focal_length * half_width],
-        [0.0, spacing[1], 0.0, -focal_length * half_height],
-        [0.0, 0.0, 1.0, -focal_length],
+        [spacing[0], 0.0, 0.0, -half_width],
+        [0.0, spacing[1], 0.0, -half_height],
+        [0.0, 0.0, 1.0, -focus_dist],
         [0.0, 0.0, 0.0, 1.0],
     ]);
-
-    let f = focal_length;
-    let to_world = arr2(&[
-        [u[0], v[0], w[0], origin[0]],
-        [u[1], v[1], w[1], origin[1]],
-        [u[2], v[2], w[2], origin[2]],
-        [0.0, 0.0, 0.0, 1.0],
-    ]);
-
-//    to_world.dot(&to_image_plane)
 
     let flip_y = arr2(&[
         [1.0, 0.0, 0.0, 0.0],
@@ -69,16 +56,11 @@ fn compute_transformation(
 /**
  *  Transform image pixel (i,j) to image plane coordinates (u, v).
  */
-fn compute_transformation_eye(
-    resolution_x: u32,
-    resolution_y: u32,
+fn compute_camera_to_world(
     u: Array1<f64>,
     v: Array1<f64>,
     w: Array1<f64>,
     origin: Array1<f64>,
-    half_width: f64,
-    half_height: f64,
-    focal_length: f64,
 ) -> Array2<f64> {
 
     let to_world = arr2(&[
@@ -118,10 +100,10 @@ impl Camera {
         aperture: f64,
     ) -> Camera {
         let lens_radius = aperture / 2.0;
-        let focal_length = Vec4::l2_norm((origin.clone() - lookat.clone()).view());
+        let focus_dist = Vec4::l2_norm((origin.clone() - lookat.clone()).view());
         let theta = vertical_fov * std::f64::consts::PI / 180.0;
         let aspect = resolution_x as f64 / resolution_y as f64;
-        let half_height = (theta / 2.0).tan();
+        let half_height = focus_dist * (theta / 2.0).tan();
         let half_width = aspect * half_height;
 
         // Camera orthonormal basis
@@ -129,28 +111,20 @@ impl Camera {
         let u = Vec4::normalize(Vec4::cross(up.clone(), w.clone()));
         let v = Vec4::cross(w.clone(), u.clone());
 
-        let transformation = compute_transformation(
-            resolution_x,
-            resolution_y,
+        let camera_to_world = compute_camera_to_world(
             u.clone(),
             v.clone(),
             w.clone(),
             origin.clone(),
-            half_width,
-            half_height,
-            focal_length,
         );
 
-        let eye_to_world = compute_transformation_eye(
+        let transformation = compute_image_to_world(
             resolution_x,
             resolution_y,
-            u.clone(),
-            v.clone(),
-            w.clone(),
-            origin.clone(),
             half_width,
             half_height,
-            focal_length,
+            focus_dist,
+            &camera_to_world,
         );
 
         Camera {
@@ -159,7 +133,7 @@ impl Camera {
             origin,
             transformation,
             lens_radius,
-            eye_to_world,
+            camera_to_world,
         }
     }
 
@@ -172,8 +146,7 @@ impl Camera {
 //            direction: Vec4::normalize(point_world - self.origin.clone()),
 //        }
 
-        let rd = self.eye_to_world.dot(&(self.lens_radius * random_in_unit_disk()));
-        println!(">>> rand point lens: {} {}", rd, self.origin);
+        let rd = self.camera_to_world.dot(&(self.lens_radius * random_in_unit_disk()));
         Ray {
             origin: rd.clone(),
             direction: Vec4::normalize(point_world - rd.clone()),
