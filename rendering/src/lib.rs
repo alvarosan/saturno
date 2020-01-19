@@ -47,7 +47,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], vec![], 1, camera);
 
@@ -82,7 +82,7 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -109,13 +109,13 @@ mod tests {
 
         let dims: [u32; 2] = [200, 100];
         let camera = Camera::new(
-            50.0,
+            90.0,
             dims[0],
             dims[1],
-            arr1(&[-2.0, 2.0, 1.0, 1.0]),
+            arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
@@ -151,15 +151,15 @@ mod tests {
 
         let dims: [u32; 2] = [200, 100];
         let camera = Camera::new(
-            50.0,
+            90.0,
             dims[0],
             dims[1],
-            arr1(&[0.0, 0.0, -3.0, 1.0]),
+            arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
-        let canvas = Canvas::new(dims[0], dims[1], actors, 10, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -199,9 +199,9 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
-        let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -260,10 +260,10 @@ mod tests {
             arr1(&[-2.0, 2.0, 1.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
 
-        let canvas = Canvas::new(dims[0], dims[1], actors, 5, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -305,9 +305,9 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
-        let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -368,10 +368,10 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            2.0,
+            0.0,
         );
 
-        let canvas = Canvas::new(dims[0], dims[1], actors, 3, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -397,7 +397,7 @@ mod tests {
 
         actors.push(Box::new(Sphere {
             center: arr1(&[0.0, 0.0, -1.0, 1.0]),
-            radius: 0.1,
+            radius: 0.5,
             material: Box::new(Lambertian::new(
                 arr1(&[0.1, 0.2, 0.5, 1.0]),
                 Shading::COLOR,
@@ -441,10 +441,10 @@ mod tests {
             arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            0.001,
+            0.0,
         );
 
-        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -524,10 +524,10 @@ mod tests {
             arr1(&[-2.0, 2.0, 1.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
-            0.5,
+            0.0,
         );
 
-        let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
+        let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
         let image_png =
             image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
@@ -605,7 +605,6 @@ mod tests {
             dims[0],
             dims[1],
             arr1(&[3.0, 3.0, 2.0, 1.0]),
-            //arr1(&[0.0, 0.0, 0.0, 1.0]),
             arr1(&[0.0, 0.0, -1.0, 1.0]),
             arr1(&[0.0, 1.0, 0.0, 0.0]),
             2.0,

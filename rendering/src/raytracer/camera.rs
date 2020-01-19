@@ -141,17 +141,19 @@ impl Camera {
         let point_pixels = arr1(&[x, y, 0.0, 1.0]);
         let point_world = self.get_transformation().dot(&point_pixels);
 
-//        Ray {
-//            origin: self.origin.clone(),
-//            direction: Vec4::normalize(point_world - self.origin.clone()),
-//        }
-
-        let rd = self.camera_to_world.dot(&(self.lens_radius * random_in_unit_disk()));
-        Ray {
-            origin: rd.clone(),
-            direction: Vec4::normalize(point_world - rd.clone()),
+        if self.lens_radius > 0.0 {
+            let rd = self.camera_to_world.dot(&(self.lens_radius * random_in_unit_disk()));
+            Ray {
+                origin: rd.clone(),
+                direction: Vec4::normalize(point_world - rd.clone()),
+            }
         }
-
+        else {
+            Ray {
+                origin: self.origin.clone(),
+                direction: Vec4::normalize(point_world - self.origin.clone()),
+            }
+        }
     }
 
     pub fn get_transformation(&self) -> Array2<f64> {
