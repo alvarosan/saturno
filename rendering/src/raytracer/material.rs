@@ -62,11 +62,14 @@ pub trait Scattering {
         hit_record: &Hit,
         attenuation: &mut Array1<f64>,
         scattered: &mut Ray,
+        depth: u32,
     ) -> bool;
 
     fn color(&self, hit: &Hit) -> Array1<f64>;
 
     fn clone_box(&self) -> Box<dyn Scattering>;
+
+    fn color_noscatter(&self, hit: &Hit) -> Array1<f64>;
 }
 
 //https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/5
@@ -102,9 +105,10 @@ impl Scattering for Primary {
         hit_record: &Hit,
         attenuation: &mut Array1<f64>,
         _scattered: &mut Ray,
+        depth: u32,
     ) -> bool {
         *attenuation = self.color(&hit_record);
-        false
+        depth < 1
     }
 
     fn color(&self, hit: &Hit) -> Array1<f64> {
@@ -119,6 +123,10 @@ impl Scattering for Primary {
                 return (normal + 1.0) * 0.5;
             }
         }
+    }
+
+    fn color_noscatter(&self, hit: &Hit) -> Array1<f64> {
+        self.color(hit)
     }
 
     fn clone_box(&self) -> Box<dyn Scattering> {
@@ -153,6 +161,7 @@ impl Scattering for Lambertian {
         hit_record: &Hit,
         attenuation: &mut Array1<f64>,
         scattered: &mut Ray,
+        depth: u32,
     ) -> bool {
         let target = hit_record.point.clone()
             + hit_record.normal.clone()
@@ -165,11 +174,13 @@ impl Scattering for Lambertian {
 
         *attenuation = self.color(&hit_record);
 
-        true
+        depth < 50
     }
 
-    // TODO Is it possible to share this trait definition among several
-    // structs (?)
+    fn color_noscatter(&self, _hit: &Hit) -> Array1<f64> {
+        arr1(&[0.0, 0.0, 0.0, 0.0])
+    }
+
     fn color(&self, hit: &Hit) -> Array1<f64> {
         match self.shading {
             Shading::COLOR => return self.albedo.clone(),
@@ -184,8 +195,6 @@ impl Scattering for Lambertian {
         }
     }
 
-    // TODO Is it possible to share this trait definition among several
-    // structs (?)
     fn clone_box(&self) -> Box<dyn Scattering> {
         Box::new((*self).clone())
     }
@@ -219,10 +228,13 @@ impl Scattering for Metal {
         hit_record: &Hit,
         attenuation: &mut Array1<f64>,
         scattered: &mut Ray,
+        depth: u32,
     ) -> bool {
         *scattered = reflect(self.fuzz, &incident, &hit_record);
         *attenuation = self.color(&hit_record);
-        scattered.direction.dot(&hit_record.normal) > 0.0
+
+        scattered.direction.dot(&hit_record.normal) > 0.0 &&
+        depth < 50
     }
 
     fn color(&self, hit: &Hit) -> Array1<f64> {
@@ -237,6 +249,10 @@ impl Scattering for Metal {
                 return (normal + 1.0) * 0.5;
             }
         }
+    }
+
+    fn color_noscatter(&self, _hit: &Hit) -> Array1<f64> {
+        arr1(&[0.0, 0.0, 0.0, 0.0])
     }
 
     fn clone_box(&self) -> Box<dyn Scattering> {
@@ -304,6 +320,7 @@ impl Scattering for Dielectric {
         hit_record: &Hit,
         attenuation: &mut Array1<f64>,
         scattered: &mut Ray,
+        depth: u32,
     ) -> bool {
 
         let mut outward_normal = hit_record.normal.clone();
@@ -337,7 +354,8 @@ impl Scattering for Dielectric {
         if rng.gen_range(0.0, 1.0) < reflect_prob {
             *scattered = reflected;
         }
-        true
+
+        depth < 50
     }
 
     fn color(&self, hit: &Hit) -> Array1<f64> {
@@ -352,6 +370,10 @@ impl Scattering for Dielectric {
                 return (normal + 1.0) * 0.5;
             }
         }
+    }
+
+    fn color_noscatter(&self, _hit: &Hit) -> Array1<f64> {
+        arr1(&[0.0, 0.0, 0.0, 0.0])
     }
 
     fn clone_box(&self) -> Box<dyn Scattering> {

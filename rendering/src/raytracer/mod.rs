@@ -144,19 +144,17 @@ pub mod canvas {
                     arr1(&[0.0, 0.0, 0.0, 0.0]),
                 );
 
-                if depth < 50 && current_hit.material.scatter(
+                if current_hit.material.scatter(
                     &ray,
                     &current_hit,
                     &mut attenuation,
                     &mut scattered,
+                    depth,
                 )  {
                     return attenuation * self.cast_rays(&scattered, depth+1);
                 }
                 else {
-                    // TODO This is necessary for the primary-ray material
-                    // to work. (perhaps with depth == 1?)
-                    //return attenuation;
-                    return arr1(&[0.0, 0.0, 0.0, 0.0]);
+                    return current_hit.material.color_noscatter(&current_hit);
                 }
 
             } else {
