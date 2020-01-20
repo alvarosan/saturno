@@ -4,6 +4,7 @@ pub mod common;
 pub mod common_testing;
 pub mod external;
 pub mod material;
+pub mod scenes;
 
 pub struct Image {
     pub width: u32,
