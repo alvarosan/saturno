@@ -117,9 +117,7 @@ pub fn random_book_cover() -> Vec<Box<dyn RayTraceable>> {
     actors
 }
 
-
 pub fn two_spheres_normals() -> Vec<Box<dyn RayTraceable>> {
-
     let mut actors: Vec<Box<dyn RayTraceable>> = Vec::with_capacity(1000);
     actors.push(Box::new(Sphere {
         center: arr1(&[0.0, 0.0, -1.0, 1.0]),

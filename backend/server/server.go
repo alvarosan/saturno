@@ -11,15 +11,33 @@ package server
 //
 // #include <stdlib.h>
 //
+// /**
+//  * Reallocates renderer on every single frame.
+//  */
 // extern void* get_frame();
-// unsigned char get_value(void* frame, unsigned int x, unsigned int y, unsigned int c);
+//
+// /**
+//  * Creates a renderer and returns a pointer to it. The allocated
+//  * instance can be used to render frames (through render_scene).
+//  */
+// extern void* get_renderer(unsigned int scene);
+// extern void* render_scene(void* renderer);
+//
+// /**
+//  * Various helpers to get information from the frame or manipulate
+//  * a scene.
+//  */
+// unsigned char get_value(void* frame, unsigned int x, unsigned int y,
+//                         unsigned int c);
 // extern unsigned int get_width(void* frame);
 // extern unsigned int get_height(void* frame);
 //
-// void drop_frame(void* frame) {
-//      free(frame);
+// /**
+//  * Clean up.
+//  */
+// void drop_instance(void* instance) {
+//      free(instance);
 // }
-//
 import "C"
 
 import (
@@ -31,7 +49,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	//"time"
 	"strconv"
 	"unsafe"
     "regexp"
@@ -41,6 +58,7 @@ var LISTENING_PORT = os.Getenv("LISTENING_PORT")
 var SERVED_DIR = "dist"
 var fserver = http.FileServer(http.Dir(SERVED_DIR))
 var wasmFile = regexp.MustCompile("\\.wasm$")
+var serverRenderer [10]unsafe.Pointer
 
 func Initialize() {
 	http.HandleFunc("/", customFileServer)
@@ -65,9 +83,16 @@ func customFileServer(w http.ResponseWriter, r *http.Request) {
 func handleServerSideApp(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("> Serving serverside-rendering app ... ")
 
-	frame := GetFrame()
+	sceneId, err := strconv.ParseUint(r.URL.Query().Get("sceneId"), 10, 64)
+	if err != nil {
+		log.Println(">> Url Param 'sceneId' is missing !")
+		http.NotFound(w, r)
+		return
+	}
+
+	frame := getFrame(sceneId)
 	buffer := new(bytes.Buffer)
-	err := png.Encode(buffer, frame)
+	err = png.Encode(buffer, frame)
 	checkErr(err)
 
 	w.Header().Set("Content-Type", "image/png")
@@ -76,8 +101,18 @@ func handleServerSideApp(w http.ResponseWriter, r *http.Request) {
 	checkErr(err)
 }
 
-func GetFrame() image.Image {
-	var framePtr = unsafe.Pointer(C.get_frame())
+func getFrame(sceneId uint64) image.Image {
+        if serverRenderer[sceneId] == nil {
+        	serverRenderer[sceneId] =
+            unsafe.Pointer(C.get_renderer(C.uint(sceneId)))
+        }
+	var framePtr = unsafe.Pointer(C.render_scene(serverRenderer[sceneId]))
+
+    // Or print the frame directly (reallocates renderer every time)
+	//var framePtr = unsafe.Pointer(C.get_frame())
+
+    // TODO Avoid this brute force copy of the frame (create a C interface for
+    // slices?)
 	var width int = int(C.get_width(framePtr))
 	var height int = int(C.get_height(framePtr))
 	goFrame := image.NewNRGBA(image.Rect(0, 0, width, height))
@@ -93,7 +128,7 @@ func GetFrame() image.Image {
 		}
 	}
 
-	C.drop_frame(framePtr)
+	C.drop_instance(framePtr)
 	return goFrame
 }
 
@@ -102,4 +137,12 @@ func checkErr(err error) {
 		fmt.Println(">! Panicked over: ", err.Error())
 		panic(err)
 	}
+}
+
+func CleanUp() {
+    for i := 0; i < 10; i++ {
+        if serverRenderer[i] != nil {
+            C.drop_instance(serverRenderer[i])
+        }
+    }
 }

@@ -4,7 +4,8 @@ import "./server"
 
 func main() {
         server.Initialize()
+        server.CleanUp()
 
-	// TODO linking Rust into Go
+	// TODO Review this way of linking Rust into Go
 	// https://blog.filippo.io/rustgo/
 }

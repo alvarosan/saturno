@@ -15,6 +15,7 @@ export class Viewport extends React.Component {
             currentMode: props.mode,
             image: null,
             module: null,
+            sceneId: 0,
         };
 
         wasm_promise.then(module => {
@@ -22,6 +23,7 @@ export class Viewport extends React.Component {
         });
 
         this.renderingModeChanged = this.renderingModeChanged.bind(this);
+        this.sceneIdChanged = this.sceneIdChanged.bind(this);
     }
 
     renderLocally() {
@@ -40,12 +42,16 @@ export class Viewport extends React.Component {
     }
 
     renderRemotely() {
-        return ( <img className="viewport" src="/api/v1/render"/> );
+        return ( <img className="viewport" src={ "/api/v1/render?sceneId=" + this.state.sceneId }/> );
     }
 
     renderingModeChanged(event) {
         this.setState({ currentMode:
-            event.target.checked ? "remotely" : "locally" });
+            event.target.checked ? "locally" : "remotely" });
+    }
+
+    sceneIdChanged(event) {
+        this.setState({ sceneId: event.target.value });
     }
 
     render() {
@@ -60,11 +66,12 @@ export class Viewport extends React.Component {
             <button className="l-btn" type="button">L</button>
             <button className="r-btn" type="button">R</button>
             <div>
+                <label for="rendering-mode">Local rendering</label>
                 <input type="checkbox" name="rendering-mode" onChange={ this.renderingModeChanged }/>
-                <label for="rendering-mode">Remote rendering</label>
             </div>
             <div>
-            Render time: 666.
+                <label for="sceneId">Scene Id</label>
+                <input type="text" name="sceneId" onChange={ this.sceneIdChanged } value={this.state.sceneId}/>
             </div>
             </div>
         );
