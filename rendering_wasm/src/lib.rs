@@ -1,6 +1,7 @@
 extern crate rendering;
 
-use rendering::raytracer::external::{get_frame};
+use rendering::raytracer::external;
+use rendering::raytracer::canvas::Canvas;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -8,13 +9,13 @@ mod utils;
 
 use utils::set_panic_hook;
 
-use std::mem;
-
+//use std::mem;
 //// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 //// allocator.
 //#[cfg(feature = "wee_alloc")]
 //#[global_allocator]
 //static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 
 #[wasm_bindgen]
 extern "C" {
@@ -32,10 +33,32 @@ pub fn render() -> ByteStream {
     //greet();
 
     //console::log_1(&"Before get_frame".into());
-    let frame = get_frame();
+    let frame = external::get_frame();
     set_panic_hook();
     console::log_1(&"After external::get_frame".into());
     ByteStream::new(&frame.data, frame.width, frame.height)
+}
+
+#[wasm_bindgen]
+pub fn create_renderer(scene_id: u32) -> Renderer {
+    let canvas = external::get_renderer(scene_id);
+    Renderer {
+        canvas,
+    }
+}
+
+//// Wasm wrappers ////////////////////////////////////////////////////////////
+#[wasm_bindgen]
+pub struct Renderer {
+    canvas: Box<Canvas>
+}
+
+#[wasm_bindgen]
+impl Renderer {
+    pub fn render(&self) -> ByteStream {
+        let frame = self.canvas.render_scene();
+        ByteStream::new(&frame.data, frame.width, frame.height)
+    }
 }
 
 #[wasm_bindgen]

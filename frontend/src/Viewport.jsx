@@ -11,6 +11,8 @@ export class Viewport extends React.Component {
     constructor(props) {
         super(props);
 
+        this.renderers = new Map()
+
         this.state = {
             currentMode: props.mode,
             image: null,
@@ -30,7 +32,14 @@ export class Viewport extends React.Component {
 
         // Need to import _bg to get a hold on the wasm memory buffer
         import ("rendering_wasm/rendering_wasm_bg.wasm").then(module => {
-            const frame = this.state.module.render()
+            if (!this.renderers.has(this.state.sceneId)) {
+                const rend = this.state.module.create_renderer(this.state.sceneId)
+                this.renderers.set(this.state.sceneId, rend)
+            }
+
+            //const frame = this.state.module.render()
+            const frame = this.renderers.get(this.state.sceneId).render()
+
             const imageRaw = new Uint8ClampedArray(module.memory.buffer,
                 frame.data(), frame.len())
             this.state.image = new ImageData(imageRaw, frame.width(), frame.height());

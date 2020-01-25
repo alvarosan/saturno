@@ -20,11 +20,8 @@ ndarray = "0.12.0"
 
 [dependencies.rand]                                   
 version = "0.7.2"
-
-# TODO Need to be disabled for production. What is the more
-# curstacean way?
-#features = ["wasm-bindgen"]       
-#                                             
+features = ["wasm-bindgen"]       
+                            
 #[dependencies.web-sys]
 #version = "*"
 #features = [ "console" ]

@@ -12,12 +12,12 @@ use ndarray::arr1;
 pub type Frame = Image;
 
 #[no_mangle]
-pub extern "C" fn get_renderer(scene_num: u32) -> Box<Canvas> {
+pub extern "C" fn get_renderer(scene_id: u32) -> Box<Canvas> {
 
     let dims: [u32; 2] = [200, 133];
     let actors: Vec<Box<dyn RayTraceable>>;
     let camera: Camera;
-    match scene_num {
+    match scene_id {
         0 => {
                 actors = scenes::random_book_cover();
                 camera = Camera::new(
