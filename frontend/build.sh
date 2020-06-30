@@ -8,4 +8,4 @@ wasm-pack build
 cd $GO_DIR/../frontend/
 rm -rf ./node_modules/rendering_wasm
 cp -r $GO_DIR/../rendering_wasm/pkg ./node_modules/rendering_wasm
-yarn install && yarn dev
+npm install && npm run dev
