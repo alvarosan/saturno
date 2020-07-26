@@ -11,6 +11,9 @@ FRONTEND_BUILD=${FRONTEND_DIR}/dist
 
 BACKEND_DIR=./backend
 
+SERVER_DIR=./server
+SERVER_BUILD=${SERVER_DIR}/target/release
+
 define print_status
 	@echo ""
 	@echo "////////////////////////////////////////////////////"
@@ -22,7 +25,7 @@ endef
 
 all: build
 
-build:  ${FRONTEND_BUILD}
+build:  ${FRONTEND_BUILD} ${SERVER_BUILD}
 
 ${RENDERING_LIB}:
 	$(call print_status, Build rendering library ...)
@@ -38,13 +41,14 @@ ${FRONTEND_BUILD}: ${RENDERINGWASM_LIB}
 	cd ${FRONTEND_DIR} && npm install && npm run prod
 	cp -r ${FRONTEND_BUILD} ${BACKEND_DIR}
 
-#TODO
-#${BACKEND_BUILD}:
-
+${SERVER_BUILD}: ${RENDERING_LIB}
+	$(call print_status, Build server ...)
+	cd ${SERVER_DIR} && cargo build --release
 
 clean:
 	$(call print_status, Cleaning up ...)
 	cd ${RENDERING_DIR} && cargo clean
 	cd ${RENDERINGWASM_DIR} && cargo clean
+	cd ${SERVER_DIR} && cargo clean
 	rm -rf ${RENDERINGNPM_MOD}
 	rm -rf ${FRONTEND_BUILD}
