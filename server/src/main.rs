@@ -7,17 +7,16 @@ extern crate rocket;
 
 extern crate image;
 
-use image::ColorType;
-use image::png::PNGEncoder;
+use std::path::PathBuf;
+use std::path::Path;
+
 use rendering::raytracer::external;
 use rendering::raytracer::canvas::Canvas;
 
 use rocket::http::ContentType;
-use rocket::response::Response;
 use rocket::response::content::Content;
-
-// TODO
-//#[get("/api/v1/render")]
+use rocket::response::NamedFile;
+use rocket::response::status::NotFound;
 
 pub struct Renderer {
     canvas: Box<Canvas>
@@ -30,8 +29,7 @@ pub fn create_renderer(scene_id: u32) -> Renderer {
     }
 }
 
-#[get("/v1/render")]
-//fn get_frame() -> &'static str {
+#[get("/api/v1/render")]
 fn get_frame() -> Content<Vec<u8>> {
     let renderer = create_renderer(0);
     let image = renderer.canvas.render_scene();
@@ -44,9 +42,6 @@ fn get_frame() -> Content<Vec<u8>> {
     let _result = image_png.write_to(&mut buffer,image::ImageOutputFormat::PNG);
 
     Content(ContentType::PNG, buffer)
-
-    //response
-//    "Created renderer!"
 }
 
 #[get("/health")]
@@ -54,6 +49,15 @@ fn health() -> &'static str {
     "Ok"
 }
 
+
+#[get("/<file..>")]
+fn get_file(file: PathBuf) -> Result<NamedFile, NotFound<String>> {
+    let path = Path::new("dist/").join(file);
+
+    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
+}
+
+
 fn main() {
-    rocket::ignite().mount("/api", routes![health, get_frame]).launch();
+    rocket::ignite().mount("/", routes![health, get_frame, get_file]).launch();
 }
