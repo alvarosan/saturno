@@ -9,10 +9,9 @@ FRONTEND_DIR=./frontend
 RENDERINGNPM_MOD=${FRONTEND_DIR}/node_modules/rendering_wasm
 FRONTEND_BUILD=${FRONTEND_DIR}/dist
 
-BACKEND_DIR=./backend
-
 SERVER_DIR=./server
 SERVER_BUILD=${SERVER_DIR}/target/release
+SUPERBUILD=./build
 
 define print_status
 	@echo ""
@@ -39,11 +38,16 @@ ${FRONTEND_BUILD}: ${RENDERINGWASM_LIB}
 	$(call print_status, Build frontend ...)
 	cp -r ${RENDERINGWASM_DIR}/pkg ${RENDERINGNPM_MOD}
 	cd ${FRONTEND_DIR} && npm install && npm run prod
-	cp -r ${FRONTEND_BUILD} ${BACKEND_DIR}
 
 ${SERVER_BUILD}: ${RENDERING_LIB}
 	$(call print_status, Build server ...)
 	cd ${SERVER_DIR} && cargo build --release
+
+${SUPERBUILD}: ${SERVER_BUILD}
+	$(call print_status, Creating build directory ...)
+	mkdir ${SUPERBUILD}
+	cp ${SERVER_BUILD}/server ${SUPERBUILD}
+	cp -r ${FRONTEND_BUILD} ${SUPERBUILD}
 
 clean:
 	$(call print_status, Cleaning up ...)
@@ -52,3 +56,4 @@ clean:
 	cd ${SERVER_DIR} && cargo clean
 	rm -rf ${RENDERINGNPM_MOD}
 	rm -rf ${FRONTEND_BUILD}
+	rm -rf ${SUPERBUILD}

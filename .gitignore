@@ -6,3 +6,6 @@ backend/backend
 
 # Yarn targets
 **/dist
+
+# Superbuild
+**/build
