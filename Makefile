@@ -36,8 +36,8 @@ ${RENDERINGWASM_LIB}: ${RENDERING_LIB}
 
 ${FRONTEND_BUILD}: ${RENDERINGWASM_LIB}
 	$(call print_status, Build frontend ...)
-	cp -r ${RENDERINGWASM_DIR}/pkg ${RENDERINGNPM_MOD}
-	cd ${FRONTEND_DIR} && npm install && npm run prod
+	cd ${FRONTEND_DIR} && npm install
+	cd ${FRONTEND_DIR} && npm run prod
 
 ${SERVER_BUILD}: ${RENDERING_LIB}
 	$(call print_status, Build server ...)
@@ -53,7 +53,9 @@ clean:
 	$(call print_status, Cleaning up ...)
 	cd ${RENDERING_DIR} && cargo clean
 	cd ${RENDERINGWASM_DIR} && cargo clean
+	rm -rf ${RENDERINGWASM_DIR}/pkg
 	cd ${SERVER_DIR} && cargo clean
+	rm -rf ${FRONTEND_DIR}/node_modules
 	rm -rf ${RENDERINGNPM_MOD}
 	rm -rf ${FRONTEND_BUILD}
 	rm -rf ${SUPERBUILD}

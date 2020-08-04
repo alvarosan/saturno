@@ -5,9 +5,20 @@ The rendering library has bindings for Web Assembly so it can render client or
 server-side.
 
 ### Build and Run Server
+
+1. Build solution
 ```
-cd backend &&
-./build.sh
+make
+```
+
+2. Run server
+```
+cd build && ./server
+```
+
+3. Clean build
+```
+make clean
 ```
 
 ### Run Ray Tracer Tests
