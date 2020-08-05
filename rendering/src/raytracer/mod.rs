@@ -6,6 +6,8 @@ pub mod external;
 pub mod material;
 pub mod scenes;
 
+use rayon::prelude::*;
+
 pub struct Image {
     pub width: u32,
     pub height: u32,
@@ -166,40 +168,43 @@ pub mod canvas {
         pub fn render_scene(&self) -> Image {
             let mut image = Image::new(self.width, self.height, 4);
 
-            // TODO only create it if samples > 1.
-            let mut rng = rand::thread_rng();
-
-            for i in 0..image.size() {
-                let (x, y) = image.get_pixel_coordinate(i);
+            for index in 0..image.size() {
+                let (x, y) = image.get_pixel_coordinate(index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
-                // TODO review why the statement below produces weird results...
-                // for i in 0..=number_samples {
-                for i in 0..self.samples {
-                    let mut x_final = x as f64;
-                    let mut y_final = y as f64;
-
-                    if i > 0 {
-                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
-                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
-                    }
-
-                    let ray = self.camera.get_ray(x_final, y_final);
-
-                    color = color + self.cast_rays(&ray, 1);
-                }
-
+                color = self.compute_samples(color, x, y);
                 color = color / self.samples as f64;
 
                 self.gamma_correct(&mut color, 2.0);
                 color = color * 255.0;
 
                 image.set_pixel(
-                    i,
+                    index,
                     [color[0] as u8, color[1] as u8, color[2] as u8, 255],
                 );
             }
             image
+        }
+
+        fn compute_samples(&self, mut color: Array1<f64>, x: u32, y: u32) -> Array1<f64> {
+            let mut random_gen = rand::thread_rng();
+
+            // TODO review why the statement below produces weird results...
+            // for i in 0..=number_samples {
+            for sample in 0..self.samples {
+                let mut x_final = x as f64;
+                let mut y_final = y as f64;
+
+                if sample > 0 {
+                    x_final = x as f64 + random_gen.gen_range(0.0, 0.999999);
+                    y_final = y as f64 + random_gen.gen_range(0.0, 0.999999);
+                }
+
+                let ray = self.camera.get_ray(x_final, y_final);
+
+                color = color + self.cast_rays(&ray, 1);
+            }
+            color
         }
 
         fn gamma_correct(&self, color: &mut Array1<f64>, gamma: f64) {
