@@ -8,10 +8,10 @@ mod tests {
     use crate::raytracer::canvas::Canvas;
     use crate::raytracer::common::Ray;
     use crate::raytracer::common_testing::init_image_testing;
-    use crate::raytracer::material::Lambertian;
-    use crate::raytracer::material::Primary;
-    use crate::raytracer::material::Metal;
     use crate::raytracer::material::Dielectric;
+    use crate::raytracer::material::Lambertian;
+    use crate::raytracer::material::Metal;
+    use crate::raytracer::material::Primary;
     use crate::raytracer::material::Shading;
     use crate::raytracer::scenes;
     use ndarray::arr1;

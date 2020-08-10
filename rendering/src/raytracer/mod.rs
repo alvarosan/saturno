@@ -33,7 +33,7 @@ impl Image {
         self.data.len() / self.chan as usize
     }
 
-    pub fn get_pixel_coordinate(&mut self, index: usize) -> (u32, u32) {
+    pub fn get_pixel_coordinate(&self, index: usize) -> (u32, u32) {
         // index = y * stride + x
         let stride = self.width as usize;
         let y = index / stride;
@@ -153,13 +153,11 @@ pub mod canvas {
                     &mut attenuation,
                     &mut scattered,
                     depth,
-                )  {
-                    return attenuation * self.cast_rays(&scattered, depth+1);
-                }
-                else {
+                ) {
+                    return attenuation * self.cast_rays(&scattered, depth + 1);
+                } else {
                     return current_hit.material.color_noscatter(&current_hit);
                 }
-
             } else {
                 return self.background_color(&ray);
             }
@@ -169,6 +167,7 @@ pub mod canvas {
             let mut image = Image::new(self.width, self.height, 4);
 
             for index in 0..image.size() {
+            //for (index, value) in image.data.iter().enumerate() {
                 let (x, y) = image.get_pixel_coordinate(index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
@@ -186,7 +185,12 @@ pub mod canvas {
             image
         }
 
-        fn compute_samples(&self, mut color: Array1<f64>, x: u32, y: u32) -> Array1<f64> {
+        fn compute_samples(
+            &self,
+            mut color: Array1<f64>,
+            x: u32,
+            y: u32,
+        ) -> Array1<f64> {
             let mut random_gen = rand::thread_rng();
 
             // TODO review why the statement below produces weird results...
