@@ -43,6 +43,15 @@ impl Image {
         self.data.len() as usize
     }
 
+    pub fn pixel_coordinate(width: u32, index: usize) -> (u32, u32) {
+        // index = y * stride + x
+        let stride = width as usize;
+        let y = index / stride;
+        let x = index - y as usize * stride;
+
+        (x as u32, y as u32)
+    }
+
     pub fn get_pixel_coordinate(&self, index: usize) -> (u32, u32) {
         // index = y * stride + x
         let stride = self.width as usize;
@@ -159,9 +168,9 @@ pub mod canvas {
         pub fn render_scene(&self) -> Image {
             let mut image = Image::new(self.width, self.height, 4);
 
-            for index in 0..image.size() {
-            //for (index, value) in image.data.iter().enumerate() {
-                let (x, y) = image.get_pixel_coordinate(index);
+            //for index in 0..image.size() {
+            for (index, pixel) in image.data.iter_mut().enumerate() {
+                let (x, y) = Image::pixel_coordinate(image.width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
                 color = self.compute_samples(color, x, y);
@@ -170,10 +179,11 @@ pub mod canvas {
                 self.gamma_correct(&mut color, 2.0);
                 color = color * 255.0;
 
-                image.set_pixel(
-                    index,
-                    [color[0] as u8, color[1] as u8, color[2] as u8, 255],
-                );
+                pixel.data = [color[0] as u8, color[1] as u8, color[2] as u8, 255];
+//                image.set_pixel(
+//                    index,
+//                    [color[0] as u8, color[1] as u8, color[2] as u8, 255],
+//                );
             }
             image
         }
