@@ -2,6 +2,7 @@ extern crate rendering;
 
 use rendering::raytracer::external;
 use rendering::raytracer::canvas::Canvas;
+use rendering::raytracer::Pixel;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -27,17 +28,17 @@ pub fn greet() {
     alert("He, {{project-name}}! llo");
 }
 
-#[wasm_bindgen]
-pub fn render() -> ByteStream {
-    set_panic_hook();
-    //greet();
-
-    //console::log_1(&"Before get_frame".into());
-    let frame = external::get_frame();
-    set_panic_hook();
-    console::log_1(&"After external::get_frame".into());
-    ByteStream::new(&frame.data, frame.width, frame.height)
-}
+//#[wasm_bindgen]
+//pub fn render() -> ByteStream {
+//    set_panic_hook();
+//    //greet();
+//
+//    //console::log_1(&"Before get_frame".into());
+//    let frame = external::get_frame();
+//    set_panic_hook();
+//    console::log_1(&"After external::get_frame".into());
+//    ByteStream::new(&frame.data, frame.width, frame.height)
+//}
 
 #[wasm_bindgen]
 pub fn create_renderer(scene_id: u32) -> Renderer {
@@ -57,7 +58,9 @@ pub struct Renderer {
 impl Renderer {
     pub fn render(&self) -> ByteStream {
         let frame = self.canvas.render_scene();
-        ByteStream::new(&frame.data, frame.width, frame.height)
+        let buf: Vec<u8> =
+            frame.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
+        ByteStream::new(&buf, frame.width, frame.height)
     }
 }
 

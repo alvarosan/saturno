@@ -52,9 +52,10 @@ mod tests {
         let canvas = Canvas::new(dims[0], dims[1], vec![], 1, camera);
 
         let image = canvas.render_scene();
-        //image.print();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -86,8 +87,10 @@ mod tests {
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -119,8 +122,10 @@ mod tests {
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 1, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -161,8 +166,10 @@ mod tests {
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -203,8 +210,10 @@ mod tests {
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -265,8 +274,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -309,8 +320,10 @@ mod tests {
         );
         let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -373,8 +386,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 50, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -446,8 +461,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -529,8 +546,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -612,8 +631,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 100, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }
@@ -639,8 +660,10 @@ mod tests {
 
         let canvas = Canvas::new(dims[0], dims[1], actors, 10, camera);
         let image = canvas.render_scene();
+        let buf: Vec<u8> =
+            image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         let image_png =
-            image::RgbaImage::from_raw(dims[0], dims[1], image.data).unwrap();
+            image::RgbaImage::from_raw(dims[0], dims[1], buf).unwrap();
         let _result = image_png.save(output_path);
         assert_eq!(1.0, 1.0);
     }

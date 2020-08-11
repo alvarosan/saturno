@@ -120,6 +120,6 @@ pub extern "C" fn get_data(ptr: *mut Frame) -> *const u8 {
         &mut *ptr
     };
 
-    let data_ptr: *const u8 = frame.data.as_ptr();
+    let data_ptr: *const u8 = frame.data.as_ptr() as *const u8;
     data_ptr
 }

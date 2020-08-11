@@ -8,19 +8,29 @@ pub mod scenes;
 
 use rayon::prelude::*;
 
+/**
+ * Rust does not yet support structs with generic variable-lenght arrays. So,
+ * for now, only 4C (RGBA) supported.
+ *
+ * https://medium.com/@iBelieve/rust-structs-with-generic-variable-length-arrays-7490b68499ea
+ */
+#[derive(Clone)]
+pub struct Pixel<T> {
+    pub data: [T; 4]
+}
+
 pub struct Image {
     pub width: u32,
     pub height: u32,
     pub chan: u32,
-    pub data: Vec<u8>,
+    pub data: Vec<Pixel<u8>>,
 }
 
 impl Image {
     pub fn new(width: u32, height: u32, chan: u32) -> Image {
-        // Allocate for 4C (RGBA)
-        let size = width as usize * height as usize * chan as usize;
-        let mut data: Vec<u8> = Vec::with_capacity(size);
-        data.resize(size, 0);
+        let size = width as usize * height as usize;
+        let mut data: Vec<Pixel<u8>> = Vec::with_capacity(size);
+        data.resize(size, Pixel { data: [0, 0, 0, 0] as [u8; 4] });
         Image {
             width,
             height,
@@ -30,7 +40,7 @@ impl Image {
     }
 
     pub fn size(&self) -> usize {
-        self.data.len() / self.chan as usize
+        self.data.len() as usize
     }
 
     pub fn get_pixel_coordinate(&self, index: usize) -> (u32, u32) {
@@ -43,31 +53,14 @@ impl Image {
     }
 
     pub fn get_value(&self, x: u32, y: u32, c: u32) -> u8 {
-        let index = (y * self.width + x) * self.chan + c;
-        self.data[index as usize]
+        let index = y * self.width + x;
+        let pixel = &self.data[index as usize];
+
+        pixel.data[c as usize]
     }
 
     pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
-        let j = index * self.chan as usize;
-        self.data[j] = color[0];
-        self.data[j + 1] = color[1];
-        self.data[j + 2] = color[2];
-        self.data[j + 3] = color[3];
-    }
-
-    pub fn print(&self) {
-        for i in 0..self.size() {
-            let j = i * 4;
-            if i % 800 == 0 {
-                println!(
-                    ">> data: {0}, {1}, {2}, {3}",
-                    self.data[j],
-                    self.data[j + 1],
-                    self.data[j + 2],
-                    self.data[j + 3]
-                );
-            }
-        }
+        self.data[index] = Pixel { data: color };
     }
 }
 

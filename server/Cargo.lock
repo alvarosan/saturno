@@ -861,6 +861,7 @@ dependencies = [
  "ndarray",
  "num",
  "rand",
+ "rayon",
 ]
 
 [[package]]
