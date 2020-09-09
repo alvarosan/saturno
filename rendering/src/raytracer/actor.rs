@@ -53,7 +53,7 @@ pub trait Hittable {
     //fn compute_normal(&self, point_sphere: &Array1<f64>) -> Array1<f64>;
 }
 
-pub trait RayTraceable: Hittable {}
+pub trait RayTraceable: Hittable + Sync {}
 
 // -----------------------------------------------------------------------------
 pub struct Sphere {

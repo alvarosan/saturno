@@ -57,7 +57,7 @@ pub enum Shading {
     NORMALS,
 }
 
-pub trait Scattering {
+pub trait Scattering: Sync {
     fn scatter(
         &self,
         incident: &Ray,

@@ -53,7 +53,8 @@ pub extern "C" fn render_scene(ptr: *mut Canvas) -> Box<Frame> {
         &mut *ptr
     };
 
-    Box::new(canvas.render_scene())
+    canvas.render_scene();
+    Box::new(canvas.grab_frame())
 }
 
 /**
@@ -74,11 +75,12 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         0.2,
     );
 
-    let canvas = Canvas::new(200, 100, actors, 2, camera);
+    let mut canvas = Canvas::new(200, 100, actors, 2, camera);
 
     //let now = Instant::now();
     //console::log_1(&"Before canvas::render_scene".into());
-    let image = canvas.render_scene();
+    canvas.render_scene();
+    let image = canvas.grab_frame();
     //console::log_1(&"After canvas::render_scene".into());
 
     // The Box smart pointer ensures the instance outlives the
