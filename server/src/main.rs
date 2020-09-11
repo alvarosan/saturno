@@ -29,10 +29,12 @@ pub fn create_renderer(scene_id: u32) -> Renderer {
 
 #[get("/api/v1/render")]
 fn get_frame() -> Content<Vec<u8>> {
-    let renderer = create_renderer(0);
-    let image = renderer.canvas.render_scene();
+    let mut renderer = create_renderer(0);
+    renderer.canvas.render_scene();
+    let image = renderer.canvas.grab_frame();
 
     let mut buffer: Vec<u8> = Vec::new();
+
     let buf: Vec<u8> =
         image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
     let imagergba =

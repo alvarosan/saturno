@@ -56,8 +56,11 @@ pub struct Renderer {
 
 #[wasm_bindgen]
 impl Renderer {
-    pub fn render(&self) -> ByteStream {
-        let frame = self.canvas.render_scene();
+    pub fn render(&mut self) -> ByteStream {
+
+        self.canvas.render_scene();
+        let frame = self.canvas.grab_frame();
+
         let buf: Vec<u8> =
             frame.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
         ByteStream::new(&buf, frame.width, frame.height)
