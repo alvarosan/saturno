@@ -263,7 +263,8 @@ pub mod canvas {
 
             let mut mydata = self.image.data.clone();
             let image_width = self.image.width;
-            mydata.par_iter_mut().enumerate().for_each(|(n, mut pixel)| {
+            //mydata.par_iter_mut().enumerate().for_each(|(n, mut pixel)| {
+            mydata.iter_mut().enumerate().for_each(|(n, mut pixel)| {
                 let index = n;
                 let (x, y) = Image::pixel_coordinate(image_width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
