@@ -1,4 +1,4 @@
-.PHONY: all build clean
+.PHONY: all build clean clean-frontend
 
 RENDERING_DIR=./rendering
 RENDERING_LIB=${RENDERING_DIR}/target/release
@@ -49,13 +49,19 @@ ${SUPERBUILD}: ${SERVER_BUILD}
 	cp ${SERVER_BUILD}/server ${SUPERBUILD}
 	cp -r ${FRONTEND_BUILD} ${SUPERBUILD}
 
-clean:
-	$(call print_status, Cleaning up ...)
-	cd ${RENDERING_DIR} && cargo clean
+clean-frontend: 
+	$(call print_status, Cleaning up frontend ...)
 	cd ${RENDERINGWASM_DIR} && cargo clean
-	rm -rf ${RENDERINGWASM_DIR}/pkg
-	cd ${SERVER_DIR} && cargo clean
-	rm -rf ${FRONTEND_DIR}/node_modules
 	rm -rf ${RENDERINGNPM_MOD}
+	rm -rf ${FRONTEND_DIR}/node_modules
 	rm -rf ${FRONTEND_BUILD}
 	rm -rf ${SUPERBUILD}
+
+clean-server:
+	$(call print_status, Cleaning up server ...)
+	cd ${RENDERING_DIR} && cargo clean
+	rm -rf ${RENDERINGWASM_DIR}/pkg
+	cd ${SERVER_DIR} && cargo clean
+
+clean: clean-frontend clean-server
+	$(call print_status, Full clean up ...)
