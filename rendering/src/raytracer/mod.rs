@@ -17,49 +17,6 @@ pub struct Pixel<T> {
     pub data: [T; 4]
 }
 
-//////////////////////////////////////////////
-//// Pixel-compoennt-iterator
-//// Based on:
-//// https://stackoverflow.com/questions/30218886/how-to-implement-iterator-and-intoiterator-for-a-simple-struct
-////
-//struct PixelIntoIterator {
-//    pixel: Pixel<u8>,
-//    index: usize,
-//}
-//
-//impl IntoIterator for Pixel<u8> {
-//    type Item = u8;
-//    type IntoIter = PixelIntoIterator;
-//
-//    fn into_iter(self) -> Self::IntoIter {
-//        PixelIntoIterator {
-//            pixel: self,
-//            index: 0,
-//        }
-//    }
-//}
-//
-//impl Iterator for PixelIntoIterator {
-//    type Item = u8;
-//
-//    fn next(&mut self) -> Option<u8> {
-//        let result = match self.index {
-//            0 => self.pixel.data[0],
-//            1 => self.pixel.data[1],
-//            2 => self.pixel.data[2],
-//            3 => self.pixel.data[3],
-//            _ => return None,
-//        };
-//
-//        self.index += 1;
-//        Some(result)
-//    }
-//}
-//////////////////////////////////////////////
-//
-//
-//
-
 #[derive(Clone)]
 pub struct Image {
     pub width: u32,
@@ -67,38 +24,6 @@ pub struct Image {
     pub chan: u32,
     pub data: Vec<Pixel<u8>>,
 }
-//
-//struct ImageIntoIterator {
-//    image: Image,
-//    index: usize,
-//}
-//
-//impl IntoIterator for Image {
-//    type Item = Pixel<u8>;
-//    type IntoIter = ImageIntoIterator;
-//
-//    fn into_iter(self) -> Self::IntoIter {
-//        ImageIntoIterator {
-//            image: self,
-//            index: 0,
-//        }
-//    }
-//}
-//
-//impl Iterator for ImageIntoIterator {
-//    type Item = Pixel<u8>;
-//
-//    fn next(&mut self) -> Option<Pixel<u8>> {
-//
-//        if self.index >= self.image.size() {
-//            return None;
-//        }
-//
-//        let result = self.image.data[self.index];
-//        self.index += 1;
-//        Some(result)
-//    }
-//}
 
 impl Image {
     pub fn new(width: u32, height: u32, chan: u32) -> Image {
@@ -249,22 +174,10 @@ pub mod canvas {
         }
 
         pub fn render_scene(&mut self) {
-
-            //for index in 0..image.size() {
-            //for (index, pixel) in image.data.iter_mut().enumerate() {
-            // TODO:  Seems to be trying to still use a regular iter
-            // https://www.reddit.com/r/rust/comments/ak5i6f/making_enumerate_happy_with_a_parallel_iterator/
-            //
-            // Also looks like  enumerate() is not available for ParallelIterator but only for
-            // IndexedParallelIterator , which means I need to get a way
-            // to get a hand on an IndexedParallelIter
-            // https://stackoverflow.com/questions/42721458/how-to-satisfy-the-iterator-trait-bound-in-order-to-use-rayon-here
-            //for (index, pixel) in image.data.par_iter().enumerate() {
-
-            let mut mydata = self.image.data.clone();
+            let mut rendered_data = self.image.data.clone();
             let image_width = self.image.width;
-            //mydata.par_iter_mut().enumerate().for_each(|(n, mut pixel)| {
-            mydata.iter_mut().enumerate().for_each(|(n, mut pixel)| {
+            rendered_data.par_iter_mut().enumerate().for_each(|(n, mut pixel)| {
+            //rendered_data.iter_mut().enumerate().for_each(|(n, mut pixel)| {
                 let index = n;
                 let (x, y) = Image::pixel_coordinate(image_width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
@@ -276,13 +189,9 @@ pub mod canvas {
                 color = color * 255.0;
 
                 pixel.data = [color[0] as u8, color[1] as u8, color[2] as u8, 255];
-//                image.set_pixel(
-//                    index,
-//                    [color[0] as u8, color[1] as u8, color[2] as u8, 255],
-//                );
                 });
 
-            self.image.data = mydata;
+            self.image.data = rendered_data;
         }
 
         fn compute_samples(
