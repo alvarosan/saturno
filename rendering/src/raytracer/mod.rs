@@ -70,6 +70,10 @@ impl Image {
     pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
         self.data[index] = Pixel { data: color };
     }
+
+    pub fn as_flat_vec_u8(&self) -> Vec<u8> {
+        self.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect()
+    }
 }
 
 pub mod canvas {
