@@ -1,0 +1,6 @@
+# Information about rustfmt (installation and source):
+#     * https://github.com/nrc/rustfmt/#installation
+#
+# More parameters:
+#     * `rustfmt --help=config`
+max_width=80

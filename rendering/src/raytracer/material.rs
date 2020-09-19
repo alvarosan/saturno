@@ -29,11 +29,13 @@ fn random_dir_unit_sphere() -> Array1<f64> {
  *  Re = In + 2 |In . N| N
  */
 pub fn reflect(fuzz: f64, incident: &Ray, hit: &Hit) -> Ray {
-    let dir = incident.direction.clone() -
-        2.0 * incident.direction.dot(&hit.normal) * hit.normal.clone();
+    let dir = incident.direction.clone()
+        - 2.0 * incident.direction.dot(&hit.normal) * hit.normal.clone();
 
-    Ray::new(hit.point.clone(), dir +
-             fuzz * super::material::random_dir_unit_sphere())
+    Ray::new(
+        hit.point.clone(),
+        dir + fuzz * super::material::random_dir_unit_sphere(),
+    )
 }
 
 /**
@@ -55,7 +57,7 @@ pub enum Shading {
     NORMALS,
 }
 
-pub trait Scattering {
+pub trait Scattering: Sync {
     fn scatter(
         &self,
         incident: &Ray,
@@ -216,9 +218,12 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(color: Array1<f64>, shading: Shading, fuzz: f64) -> Metal {
-        Metal { color, shading, fuzz }
+        Metal {
+            color,
+            shading,
+            fuzz,
+        }
     }
-
 }
 
 impl Scattering for Metal {
@@ -233,8 +238,7 @@ impl Scattering for Metal {
         *scattered = reflect(self.fuzz, &incident, &hit_record);
         *attenuation = self.color(&hit_record);
 
-        scattered.direction.dot(&hit_record.normal) > 0.0 &&
-        depth < 50
+        scattered.direction.dot(&hit_record.normal) > 0.0 && depth < 50
     }
 
     fn color(&self, hit: &Hit) -> Array1<f64> {
@@ -278,10 +282,19 @@ pub struct Dielectric {
 }
 
 impl Dielectric {
-    pub fn new(color: Array1<f64>, shading: Shading, refraction_idx: f64) -> Dielectric {
+    pub fn new(
+        color: Array1<f64>,
+        shading: Shading,
+        refraction_idx: f64,
+    ) -> Dielectric {
         // Air
         let refraction_idx_ext = 1.0;
-        Dielectric { color, shading, refraction_idx, refraction_idx_ext }
+        Dielectric {
+            color,
+            shading,
+            refraction_idx,
+            refraction_idx_ext,
+        }
     }
 
     /**
@@ -292,17 +305,24 @@ impl Dielectric {
      *
      * n_i ( Ray_i - Cos(Theta_i) Norm ) = n_t ( Ray_t + Cos(Theta_t) Norm )
      */
-    pub fn refract(&self, incident: &Ray, normal: Array1<f64>, hit: &Hit, ni_over_nt: f64, refracted: &mut Ray) -> bool {
+    pub fn refract(
+        &self,
+        incident: &Ray,
+        normal: Array1<f64>,
+        hit: &Hit,
+        ni_over_nt: f64,
+        refracted: &mut Ray,
+    ) -> bool {
         let ri_dot_normal = incident.direction.dot(&normal);
 
         // Discriminant
-        let sq_cos_theta_t = 1.0 -
-            ni_over_nt * ni_over_nt * (1.0 - ri_dot_normal * ri_dot_normal);
+        let sq_cos_theta_t = 1.0
+            - ni_over_nt * ni_over_nt * (1.0 - ri_dot_normal * ri_dot_normal);
 
         if sq_cos_theta_t > 0.0 {
-            let dir =
-                ni_over_nt * (incident.direction.clone() - normal.clone() * ri_dot_normal) -
-                normal * sq_cos_theta_t.sqrt();
+            let dir = ni_over_nt
+                * (incident.direction.clone() - normal.clone() * ri_dot_normal)
+                - normal * sq_cos_theta_t.sqrt();
 
             *refracted = Ray::new(hit.point.clone(), dir);
 
@@ -322,31 +342,34 @@ impl Scattering for Dielectric {
         scattered: &mut Ray,
         depth: u32,
     ) -> bool {
-
         let mut outward_normal = hit_record.normal.clone();
         let mut ni_over_nt = self.refraction_idx_ext / self.refraction_idx;
-        let mut cosine = -hit_record.normal.dot(&incident.direction) /
-            Vec4::l2_norm(incident.direction.view());
+        let mut cosine = -hit_record.normal.dot(&incident.direction)
+            / Vec4::l2_norm(incident.direction.view());
         let reflect_prob: f64;
 
-        // Change signs and invert refraction ratio if the normal points 
+        // Change signs and invert refraction ratio if the normal points
         // inwards (default outwards; but when the ray exits then it needs
         // to be inverted).
         if hit_record.normal.dot(&incident.direction) > 0.0 {
             outward_normal = -hit_record.normal.clone();
             ni_over_nt = self.refraction_idx / self.refraction_idx_ext;
-            cosine = self.refraction_idx *
-                hit_record.normal.dot(&incident.direction) /
-                Vec4::l2_norm(incident.direction.view());
+            cosine = self.refraction_idx
+                * hit_record.normal.dot(&incident.direction)
+                / Vec4::l2_norm(incident.direction.view());
         }
         *attenuation = self.color(&hit_record);
 
         let reflected = reflect(0.0, &incident, hit_record);
-        if self.refract(&incident, outward_normal, hit_record, ni_over_nt,
-                        scattered) {
-            reflect_prob =  schlick(cosine, self.refraction_idx);
-        }
-        else {
+        if self.refract(
+            &incident,
+            outward_normal,
+            hit_record,
+            ni_over_nt,
+            scattered,
+        ) {
+            reflect_prob = schlick(cosine, self.refraction_idx);
+        } else {
             reflect_prob = 1.0;
         }
 

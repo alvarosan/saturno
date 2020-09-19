@@ -1,8 +1,8 @@
+use crate::raytracer::actor::RayTraceable;
 use crate::raytracer::camera::Camera;
 use crate::raytracer::canvas::Canvas;
-use crate::raytracer::actor::RayTraceable;
-use crate::raytracer::Image;
 use crate::raytracer::scenes;
+use crate::raytracer::Image;
 use ndarray::arr1;
 
 //extern crate web_sys;
@@ -13,34 +13,33 @@ pub type Frame = Image;
 
 #[no_mangle]
 pub extern "C" fn get_renderer(scene_id: u32) -> Box<Canvas> {
-
     let dims: [u32; 2] = [200, 133];
     let actors: Vec<Box<dyn RayTraceable>>;
     let camera: Camera;
     match scene_id {
         0 => {
-                actors = scenes::random_book_cover();
-                camera = Camera::new(
-                    20.0,
-                    dims[0],
-                    dims[1],
-                    arr1(&[13.0, 2.0, 3.0, 1.0]),
-                    arr1(&[0.0, 0.0, 0.0, 1.0]),
-                    arr1(&[0.0, 1.0, 0.0, 0.0]),
-                    0.2,
+            actors = scenes::random_book_cover();
+            camera = Camera::new(
+                20.0,
+                dims[0],
+                dims[1],
+                arr1(&[13.0, 2.0, 3.0, 1.0]),
+                arr1(&[0.0, 0.0, 0.0, 1.0]),
+                arr1(&[0.0, 1.0, 0.0, 0.0]),
+                0.2,
             );
-        },
+        }
         _ => {
-                actors = scenes::two_spheres_normals();
-                camera = Camera::new(
-                    90.0,
-                    dims[0],
-                    dims[1],
-                    arr1(&[0.0, 0.0, 0.0, 1.0]),
-                    arr1(&[0.0, 0.0, -1.0, 1.0]),
-                    arr1(&[0.0, 1.0, 0.0, 0.0]),
-                    0.0,
-                );
+            actors = scenes::two_spheres_normals();
+            camera = Camera::new(
+                90.0,
+                dims[0],
+                dims[1],
+                arr1(&[0.0, 0.0, 0.0, 1.0]),
+                arr1(&[0.0, 0.0, -1.0, 1.0]),
+                arr1(&[0.0, 1.0, 0.0, 0.0]),
+                0.0,
+            );
         }
     }
 
@@ -54,7 +53,8 @@ pub extern "C" fn render_scene(ptr: *mut Canvas) -> Box<Frame> {
         &mut *ptr
     };
 
-    Box::new(canvas.render_scene())
+    canvas.render_scene();
+    Box::new(canvas.grab_frame())
 }
 
 /**
@@ -75,11 +75,12 @@ pub extern "C" fn get_frame() -> Box<Frame> {
         0.2,
     );
 
-    let canvas = Canvas::new(200, 100, actors, 2, camera);
+    let mut canvas = Canvas::new(200, 100, actors, 2, camera);
 
     //let now = Instant::now();
     //console::log_1(&"Before canvas::render_scene".into());
-    let image = canvas.render_scene();
+    canvas.render_scene();
+    let image = canvas.grab_frame();
     //console::log_1(&"After canvas::render_scene".into());
 
     // The Box smart pointer ensures the instance outlives the
@@ -121,8 +122,6 @@ pub extern "C" fn get_data(ptr: *mut Frame) -> *const u8 {
         &mut *ptr
     };
 
-    let data_ptr: *const u8 = frame.data.as_ptr();
+    let data_ptr: *const u8 = frame.data.as_ptr() as *const u8;
     data_ptr
 }
-
-

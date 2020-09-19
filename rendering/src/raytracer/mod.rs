@@ -6,19 +6,30 @@ pub mod external;
 pub mod material;
 pub mod scenes;
 
+/**
+ * Rust does not yet support structs with generic variable-lenght arrays. So,
+ * for now, only 4C (RGBA) supported.
+ *
+ * https://medium.com/@iBelieve/rust-structs-with-generic-variable-length-arrays-7490b68499ea
+ */
+#[derive(Clone, Copy)]
+pub struct Pixel<T> {
+    pub data: [T; 4]
+}
+
+#[derive(Clone)]
 pub struct Image {
     pub width: u32,
     pub height: u32,
     pub chan: u32,
-    pub data: Vec<u8>,
+    pub data: Vec<Pixel<u8>>,
 }
 
 impl Image {
     pub fn new(width: u32, height: u32, chan: u32) -> Image {
-        // Allocate for 4C (RGBA)
-        let size = width as usize * height as usize * chan as usize;
-        let mut data: Vec<u8> = Vec::with_capacity(size);
-        data.resize(size, 0);
+        let size = width as usize * height as usize;
+        let mut data: Vec<Pixel<u8>> = Vec::with_capacity(size);
+        data.resize(size, Pixel { data: [0, 0, 0, 0] as [u8; 4] });
         Image {
             width,
             height,
@@ -28,10 +39,19 @@ impl Image {
     }
 
     pub fn size(&self) -> usize {
-        self.data.len() / self.chan as usize
+        self.data.len() as usize
     }
 
-    pub fn get_pixel_coordinate(&mut self, index: usize) -> (u32, u32) {
+    pub fn pixel_coordinate(width: u32, index: usize) -> (u32, u32) {
+        // index = y * stride + x
+        let stride = width as usize;
+        let y = index / stride;
+        let x = index - y as usize * stride;
+
+        (x as u32, y as u32)
+    }
+
+    pub fn get_pixel_coordinate(&self, index: usize) -> (u32, u32) {
         // index = y * stride + x
         let stride = self.width as usize;
         let y = index / stride;
@@ -41,31 +61,18 @@ impl Image {
     }
 
     pub fn get_value(&self, x: u32, y: u32, c: u32) -> u8 {
-        let index = (y * self.width + x) * self.chan + c;
-        self.data[index as usize]
+        let index = y * self.width + x;
+        let pixel = &self.data[index as usize];
+
+        pixel.data[c as usize]
     }
 
     pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
-        let j = index * self.chan as usize;
-        self.data[j] = color[0];
-        self.data[j + 1] = color[1];
-        self.data[j + 2] = color[2];
-        self.data[j + 3] = color[3];
+        self.data[index] = Pixel { data: color };
     }
 
-    pub fn print(&self) {
-        for i in 0..self.size() {
-            let j = i * 4;
-            if i % 800 == 0 {
-                println!(
-                    ">> data: {0}, {1}, {2}, {3}",
-                    self.data[j],
-                    self.data[j + 1],
-                    self.data[j + 2],
-                    self.data[j + 3]
-                );
-            }
-        }
+    pub fn as_flat_vec_u8(&self) -> Vec<u8> {
+        self.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect()
     }
 }
 
@@ -82,8 +89,10 @@ pub mod canvas {
     use crate::raytracer::common::Ray;
     use crate::raytracer::common::Vec4;
     use crate::raytracer::Image;
+    use crate::raytracer::Pixel;
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
+    use rayon::prelude::*;
 
     pub struct Canvas {
         pub width: u32,
@@ -91,6 +100,7 @@ pub mod canvas {
         pub world: HittableList,
         pub samples: u32,
         camera: Camera,
+        image: Image,
     }
 
     impl Canvas {
@@ -102,6 +112,7 @@ pub mod canvas {
             camera: Camera,
         ) -> Canvas {
             let world = HittableList::new(actors);
+            let image = Image::new(width, height, 4);
 
             Canvas {
                 width,
@@ -109,7 +120,12 @@ pub mod canvas {
                 world,
                 samples,
                 camera,
+                image,
             }
+        }
+
+        pub fn grab_frame(&self) -> Image {
+            self.image.clone()
         }
 
         /**
@@ -151,55 +167,67 @@ pub mod canvas {
                     &mut attenuation,
                     &mut scattered,
                     depth,
-                )  {
-                    return attenuation * self.cast_rays(&scattered, depth+1);
-                }
-                else {
+                ) {
+                    return attenuation * self.cast_rays(&scattered, depth + 1);
+                } else {
                     return current_hit.material.color_noscatter(&current_hit);
                 }
-
             } else {
                 return self.background_color(&ray);
             }
         }
 
-        pub fn render_scene(&self) -> Image {
-            let mut image = Image::new(self.width, self.height, 4);
+        pub fn render_scene_rayon(&mut self) {
+            let mut rendered_data = self.image.data.clone();
+            rendered_data.par_iter_mut().enumerate().for_each(&self.render_pixel());
+            self.image.data = rendered_data;
+        }
 
-            // TODO only create it if samples > 1.
-            let mut rng = rand::thread_rng();
+        pub fn render_scene(&mut self) {
+            let mut rendered_data = self.image.data.clone();
+            rendered_data.iter_mut().enumerate().for_each(self.render_pixel());
+            self.image.data = rendered_data;
+        }
 
-            for i in 0..image.size() {
-                let (x, y) = image.get_pixel_coordinate(i);
+        fn render_pixel(&mut self) ->Box<dyn Fn((usize, &mut Pixel<u8>)) -> () + '_ + Sync> {
+            return Box::new(move |(index, pixel)| {
+                let (x, y) = Image::pixel_coordinate(self.image.width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
-                // TODO review why the statement below produces weird results...
-                // for i in 0..=number_samples {
-                for i in 0..self.samples {
-                    let mut x_final = x as f64;
-                    let mut y_final = y as f64;
-
-                    if i > 0 {
-                        x_final = x as f64 + rng.gen_range(0.0, 0.999999);
-                        y_final = y as f64 + rng.gen_range(0.0, 0.999999);
-                    }
-
-                    let ray = self.camera.get_ray(x_final, y_final);
-
-                    color = color + self.cast_rays(&ray, 1);
-                }
-
+                color = self.compute_samples(color, x, y);
                 color = color / self.samples as f64;
 
                 self.gamma_correct(&mut color, 2.0);
                 color = color * 255.0;
 
-                image.set_pixel(
-                    i,
-                    [color[0] as u8, color[1] as u8, color[2] as u8, 255],
-                );
+                pixel.data = [color[0] as u8, color[1] as u8, color[2] as u8, 255];
+        })
+        }
+
+        fn compute_samples(
+            &self,
+            mut color: Array1<f64>,
+            x: u32,
+            y: u32,
+        ) -> Array1<f64> {
+            let mut random_gen = rand::thread_rng();
+
+            // TODO review why the statement below produces weird results...
+            // for i in 0..=number_samples {
+            for sample in 0..self.samples {
+                let mut x_final = x as f64;
+                let mut y_final = y as f64;
+
+                if sample > 0 {
+                    x_final = x as f64 + random_gen.gen_range(0.0, 0.999999);
+                    y_final = y as f64 + random_gen.gen_range(0.0, 0.999999);
+                }
+
+                let ray = self.camera.get_ray(x_final, y_final);
+
+                color = color + self.cast_rays(&ray, 1);
             }
-            image
+            color
         }
 
         fn gamma_correct(&self, color: &mut Array1<f64>, gamma: f64) {

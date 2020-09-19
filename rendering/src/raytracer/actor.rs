@@ -53,7 +53,7 @@ pub trait Hittable {
     //fn compute_normal(&self, point_sphere: &Array1<f64>) -> Array1<f64>;
 }
 
-pub trait RayTraceable: Hittable {}
+pub trait RayTraceable: Hittable + Sync {}
 
 // -----------------------------------------------------------------------------
 pub struct Sphere {
@@ -114,11 +114,11 @@ impl Hittable for Sphere {
         let a = ray.direction.dot(&ray.direction);
         let b = oc.dot(&ray.direction);
         let c = oc.dot(&oc) - self.radius * self.radius;
-        let discriminant = b * b -  a * c;
+        let discriminant = b * b - a * c;
 
         if discriminant > 0.0 {
             // Solution (-) In range ?
-            let t = (-b - discriminant.sqrt()) / ( a);
+            let t = (-b - discriminant.sqrt()) / (a);
             if t_min < t && t < t_max {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);
@@ -128,7 +128,7 @@ impl Hittable for Sphere {
             }
 
             // Solution (+) In range ?
-            let t = (-b + discriminant.sqrt()) / ( a);
+            let t = (-b + discriminant.sqrt()) / (a);
             if t_min < t && t < t_max {
                 record.t = t;
                 record.point = ray.point_at_parameter(t);

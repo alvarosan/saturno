@@ -71,7 +71,6 @@ fn compute_camera_orientation(
     v: Array1<f64>,
     w: Array1<f64>,
 ) -> Array2<f64> {
-
     let to_world = arr2(&[
         [u[0], v[0], w[0], 0.0],
         [u[1], v[1], w[1], 0.0],
@@ -81,7 +80,6 @@ fn compute_camera_orientation(
 
     to_world
 }
-
 
 pub fn random_in_unit_disk() -> Array1<f64> {
     let mut p = arr1(&[std::f64::MAX, std::f64::MAX]);
@@ -97,7 +95,6 @@ pub fn random_in_unit_disk() -> Array1<f64> {
     arr1(&[p[0], p[1], 0.0, 1.0])
 }
 
-
 impl Camera {
     pub fn new(
         vertical_fov: f64,
@@ -109,7 +106,8 @@ impl Camera {
         aperture: f64,
     ) -> Camera {
         let lens_radius = aperture / 2.0;
-        let focus_dist = Vec4::l2_norm((origin.clone() - lookat.clone()).view());
+        let focus_dist =
+            Vec4::l2_norm((origin.clone() - lookat.clone()).view());
         //let focus_dist = 10.0;
         let theta = vertical_fov * std::f64::consts::PI / 180.0;
         let aspect = resolution_x as f64 / resolution_y as f64;
@@ -121,11 +119,8 @@ impl Camera {
         let u = Vec4::normalize(Vec4::cross(up.clone(), w.clone()));
         let v = Vec4::cross(w.clone(), u.clone());
 
-        let camera_orientation = compute_camera_orientation(
-            u.clone(),
-            v.clone(),
-            w.clone(),
-        );
+        let camera_orientation =
+            compute_camera_orientation(u.clone(), v.clone(), w.clone());
 
         let transformation = compute_image_to_world(
             resolution_x,
@@ -151,12 +146,16 @@ impl Camera {
         let point_pixels = arr1(&[x, y, 0.0, 1.0]);
         let point_world = self.get_transformation().dot(&point_pixels);
 
-        let mut rd = self.camera_orientation.dot(&(self.lens_radius * random_in_unit_disk()));
+        let mut rd = self
+            .camera_orientation
+            .dot(&(self.lens_radius * random_in_unit_disk()));
         // Artificially set w to 0 (as the offset will be added).
         rd[3] = 0.0;
         Ray {
             origin: self.origin.clone() + rd.clone(),
-            direction: Vec4::normalize(point_world - self.origin.clone() - rd.clone()),
+            direction: Vec4::normalize(
+                point_world - self.origin.clone() - rd.clone(),
+            ),
         }
     }
 
