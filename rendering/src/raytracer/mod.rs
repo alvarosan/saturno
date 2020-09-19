@@ -85,10 +85,10 @@ pub mod canvas {
     use crate::raytracer::common::Ray;
     use crate::raytracer::common::Vec4;
     use crate::raytracer::Image;
+    use crate::raytracer::Pixel;
     use ndarray::{arr1, Array1};
     use std::vec::Vec;
     use rayon::prelude::*;
-
 
     pub struct Canvas {
         pub width: u32,
@@ -173,13 +173,21 @@ pub mod canvas {
             }
         }
 
+        pub fn render_scene_rayon(&mut self) {
+            let mut rendered_data = self.image.data.clone();
+            rendered_data.par_iter_mut().enumerate().for_each(&self.render_pixel());
+            self.image.data = rendered_data;
+        }
+
         pub fn render_scene(&mut self) {
             let mut rendered_data = self.image.data.clone();
-            let image_width = self.image.width;
-            rendered_data.par_iter_mut().enumerate().for_each(|(n, mut pixel)| {
-            //rendered_data.iter_mut().enumerate().for_each(|(n, mut pixel)| {
-                let index = n;
-                let (x, y) = Image::pixel_coordinate(image_width, index);
+            rendered_data.iter_mut().enumerate().for_each(self.render_pixel());
+            self.image.data = rendered_data;
+        }
+
+        fn render_pixel(&mut self) ->Box<dyn Fn((usize, &mut Pixel<u8>)) -> () + '_ + Sync> {
+            return Box::new(move |(index, pixel)| {
+                let (x, y) = Image::pixel_coordinate(self.image.width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
 
                 color = self.compute_samples(color, x, y);
@@ -189,9 +197,7 @@ pub mod canvas {
                 color = color * 255.0;
 
                 pixel.data = [color[0] as u8, color[1] as u8, color[2] as u8, 255];
-                });
-
-            self.image.data = rendered_data;
+        })
         }
 
         fn compute_samples(

@@ -659,7 +659,7 @@ mod tests {
         );
 
         let mut canvas = Canvas::new(dims[0], dims[1], actors, 10, camera);
-        canvas.render_scene();
+        canvas.render_scene_rayon();
         let image = canvas.grab_frame();
 
         let buf: Vec<u8> =
