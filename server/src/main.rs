@@ -11,7 +11,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use rendering::raytracer::canvas::Canvas;
-use rendering::raytracer::external;
+use rendering::raytracer::scenes;
 
 use rocket::http::ContentType;
 use rocket::response::content::Content;
@@ -23,7 +23,7 @@ pub struct Renderer {
 }
 
 pub fn create_renderer(scene_id: u32) -> Renderer {
-    let canvas = external::get_renderer(scene_id);
+    let canvas = scenes::get_renderer(scene_id);
     Renderer { canvas }
 }
 

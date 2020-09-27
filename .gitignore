@@ -6,3 +6,6 @@
 
 # Superbuild
 **/build
+
+# Editors
+*.vim
