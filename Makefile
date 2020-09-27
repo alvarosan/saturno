@@ -1,7 +1,6 @@
 .PHONY: all build clean clean-frontend
 
 RENDERING_DIR=./rendering
-RENDERING_LIB=${RENDERING_DIR}/target/release/librendering.rlib
 RENDERINGWASM_DIR=./rendering_wasm
 RENDERINGWASM_LIB=./rendering_wasm/target/release/librendering_wasm.rlib
 
@@ -26,11 +25,8 @@ all: build
 
 build:  ${FRONTEND_BUILD} ${SERVER_BUILD}
 
-${RENDERING_LIB}:
-	$(call print_status, Build rendering library ...)
-	cd ${RENDERING_DIR} && cargo build --release
 
-${RENDERINGWASM_LIB}: ${RENDERING_LIB}
+${RENDERINGWASM_LIB}:
 	$(call print_status, Build wasm wrapper ...)
 	cd ${RENDERINGWASM_DIR} && wasm-pack build
 
@@ -39,7 +35,7 @@ ${FRONTEND_BUILD}: ${RENDERINGWASM_LIB}
 	cd ${FRONTEND_DIR} && npm install
 	cd ${FRONTEND_DIR} && npm run prod
 
-${SERVER_BUILD}: ${RENDERING_LIB}
+${SERVER_BUILD}:
 	$(call print_status, Build server ...)
 	cd ${SERVER_DIR} && cargo build --release
 
