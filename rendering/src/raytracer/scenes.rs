@@ -142,7 +142,6 @@ pub fn two_spheres_normals() -> Vec<Box<dyn RayTraceable>> {
     actors
 }
 
-
 pub fn get_renderer(scene_id: u32) -> Box<Canvas> {
     let dims: [u32; 2] = [200, 133];
     let actors: Vec<Box<dyn RayTraceable>>;

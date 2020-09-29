@@ -1,4 +1,3 @@
-
 /**
  * Rust does not yet support structs with generic variable-lenght arrays. So,
  * for now, only 4C (RGBA) supported.
@@ -7,7 +6,7 @@
  */
 #[derive(Clone, Copy)]
 pub struct Pixel<T> {
-    pub data: [T; 4]
+    pub data: [T; 4],
 }
 
 #[derive(Clone)]
@@ -22,7 +21,12 @@ impl Image {
     pub fn new(width: u32, height: u32, chan: u32) -> Image {
         let size = width as usize * height as usize;
         let mut data: Vec<Pixel<u8>> = Vec::with_capacity(size);
-        data.resize(size, Pixel { data: [0, 0, 0, 0] as [u8; 4] });
+        data.resize(
+            size,
+            Pixel {
+                data: [0, 0, 0, 0] as [u8; 4],
+            },
+        );
         Image {
             width,
             height,
@@ -65,6 +69,10 @@ impl Image {
     }
 
     pub fn as_flat_vec_u8(&self) -> Vec<u8> {
-        self.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect()
+        self.data
+            .iter()
+            .flat_map(|pixel| pixel.data.iter())
+            .cloned()
+            .collect()
     }
 }
