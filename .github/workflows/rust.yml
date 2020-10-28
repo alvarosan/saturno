@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ * ]
+    branches: [ master ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -23,11 +23,8 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-    - name: Build rendering library
-      run: cd rendering && cargo build
-
-    - name: Run rustfmt
+    - name: Run rustfmt check
       run: rustfmt --check --config-path . ./server/src/main.rs && rustfmt --check --config-path . ./rendering/src/lib.rs && rustfmt --check --config-path . ./rendering_wasm/src/lib.rs
 
-    - name: Run rendering tests
-      run: cd rendering && cargo test --verbose
+    - name: Build & Run rendering tests
+      run: cd rendering && cargo test --release --verbose -- point_at_parameter render_background render_sphere_color render_sphere_normals render_antialiasing camera_positionable

@@ -35,8 +35,12 @@ fn get_frame() -> Content<Vec<u8>> {
 
     let mut buffer: Vec<u8> = Vec::new();
 
-    let buf: Vec<u8> =
-        image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
+    let buf: Vec<u8> = image
+        .data
+        .iter()
+        .flat_map(|pixel| pixel.data.iter())
+        .cloned()
+        .collect();
     let imagergba =
         image::RgbaImage::from_raw(image.width, image.height, buf.clone());
     let image_png = image::DynamicImage::ImageRgba8(imagergba.unwrap());

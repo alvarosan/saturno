@@ -2,7 +2,6 @@ pub mod actor;
 pub mod camera;
 pub mod common;
 pub mod common_testing;
-pub mod external;
 pub mod image;
 pub mod material;
 pub mod scenes;
