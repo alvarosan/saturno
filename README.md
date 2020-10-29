@@ -4,6 +4,11 @@ An implementation of Peter Shirley's [Ray Tracing in One Weekend][rtiow_book].
 The rendering library has bindings for Web Assembly so it can render client or
 server-side.
 
+### Requirements
+
+* node 11.10
+* rust-nightly
+
 ### Build and Run Server
 
 1. Build solution

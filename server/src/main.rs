@@ -11,7 +11,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use rendering::raytracer::canvas::Canvas;
-use rendering::raytracer::external;
+use rendering::raytracer::scenes;
 
 use rocket::http::ContentType;
 use rocket::response::content::Content;
@@ -23,7 +23,7 @@ pub struct Renderer {
 }
 
 pub fn create_renderer(scene_id: u32) -> Renderer {
-    let canvas = external::get_renderer(scene_id);
+    let canvas = scenes::get_renderer(scene_id);
     Renderer { canvas }
 }
 
@@ -35,8 +35,12 @@ fn get_frame() -> Content<Vec<u8>> {
 
     let mut buffer: Vec<u8> = Vec::new();
 
-    let buf: Vec<u8> =
-        image.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect();
+    let buf: Vec<u8> = image
+        .data
+        .iter()
+        .flat_map(|pixel| pixel.data.iter())
+        .cloned()
+        .collect();
     let imagergba =
         image::RgbaImage::from_raw(image.width, image.height, buf.clone());
     let image_png = image::DynamicImage::ImageRgba8(imagergba.unwrap());

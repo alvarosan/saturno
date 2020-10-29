@@ -2,79 +2,9 @@ pub mod actor;
 pub mod camera;
 pub mod common;
 pub mod common_testing;
-pub mod external;
+pub mod image;
 pub mod material;
 pub mod scenes;
-
-/**
- * Rust does not yet support structs with generic variable-lenght arrays. So,
- * for now, only 4C (RGBA) supported.
- *
- * https://medium.com/@iBelieve/rust-structs-with-generic-variable-length-arrays-7490b68499ea
- */
-#[derive(Clone, Copy)]
-pub struct Pixel<T> {
-    pub data: [T; 4]
-}
-
-#[derive(Clone)]
-pub struct Image {
-    pub width: u32,
-    pub height: u32,
-    pub chan: u32,
-    pub data: Vec<Pixel<u8>>,
-}
-
-impl Image {
-    pub fn new(width: u32, height: u32, chan: u32) -> Image {
-        let size = width as usize * height as usize;
-        let mut data: Vec<Pixel<u8>> = Vec::with_capacity(size);
-        data.resize(size, Pixel { data: [0, 0, 0, 0] as [u8; 4] });
-        Image {
-            width,
-            height,
-            chan,
-            data,
-        }
-    }
-
-    pub fn size(&self) -> usize {
-        self.data.len() as usize
-    }
-
-    pub fn pixel_coordinate(width: u32, index: usize) -> (u32, u32) {
-        // index = y * stride + x
-        let stride = width as usize;
-        let y = index / stride;
-        let x = index - y as usize * stride;
-
-        (x as u32, y as u32)
-    }
-
-    pub fn get_pixel_coordinate(&self, index: usize) -> (u32, u32) {
-        // index = y * stride + x
-        let stride = self.width as usize;
-        let y = index / stride;
-        let x = index - y as usize * stride;
-
-        (x as u32, y as u32)
-    }
-
-    pub fn get_value(&self, x: u32, y: u32, c: u32) -> u8 {
-        let index = y * self.width + x;
-        let pixel = &self.data[index as usize];
-
-        pixel.data[c as usize]
-    }
-
-    pub fn set_pixel(&mut self, index: usize, color: [u8; 4]) {
-        self.data[index] = Pixel { data: color };
-    }
-
-    pub fn as_flat_vec_u8(&self) -> Vec<u8> {
-        self.data.iter().flat_map(|pixel| pixel.data.iter()).cloned().collect()
-    }
-}
 
 pub mod canvas {
     extern crate rand;
@@ -88,11 +18,11 @@ pub mod canvas {
     use crate::raytracer::camera::Camera;
     use crate::raytracer::common::Ray;
     use crate::raytracer::common::Vec4;
-    use crate::raytracer::Image;
-    use crate::raytracer::Pixel;
+    use crate::raytracer::image::Image;
+    use crate::raytracer::image::Pixel;
     use ndarray::{arr1, Array1};
-    use std::vec::Vec;
     use rayon::prelude::*;
+    use std::vec::Vec;
 
     pub struct Canvas {
         pub width: u32,
@@ -179,17 +109,25 @@ pub mod canvas {
 
         pub fn render_scene_rayon(&mut self) {
             let mut rendered_data = self.image.data.clone();
-            rendered_data.par_iter_mut().enumerate().for_each(&self.render_pixel());
+            rendered_data
+                .par_iter_mut()
+                .enumerate()
+                .for_each(&self.render_pixel());
             self.image.data = rendered_data;
         }
 
         pub fn render_scene(&mut self) {
             let mut rendered_data = self.image.data.clone();
-            rendered_data.iter_mut().enumerate().for_each(self.render_pixel());
+            rendered_data
+                .iter_mut()
+                .enumerate()
+                .for_each(self.render_pixel());
             self.image.data = rendered_data;
         }
 
-        fn render_pixel(&mut self) ->Box<dyn Fn((usize, &mut Pixel<u8>)) -> () + '_ + Sync> {
+        fn render_pixel(
+            &mut self,
+        ) -> Box<dyn Fn((usize, &mut Pixel<u8>)) -> () + '_ + Sync> {
             return Box::new(move |(index, pixel)| {
                 let (x, y) = Image::pixel_coordinate(self.image.width, index);
                 let mut color = arr1(&[0.0, 0.0, 0.0, 0.0]);
@@ -200,8 +138,9 @@ pub mod canvas {
                 self.gamma_correct(&mut color, 2.0);
                 color = color * 255.0;
 
-                pixel.data = [color[0] as u8, color[1] as u8, color[2] as u8, 255];
-        })
+                pixel.data =
+                    [color[0] as u8, color[1] as u8, color[2] as u8, 255];
+            });
         }
 
         fn compute_samples(

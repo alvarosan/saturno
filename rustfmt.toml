@@ -1,0 +1,20 @@
+# Information about rustfmt (installation and source):
+#     * https://github.com/nrc/rustfmt/#installation
+#
+# More parameters:
+#     * `rustfmt --help=config`
+
+max_width=80
+
+ignore = [
+# "./testng/**",
+# "./**/*.png",
+#  "*.vim",
+]
+
+# rustfmt --check  --config-path  /home/alvaro/workspace/source/external/saturno   ./rendering/**/*
+# https://github.com/rust-lang/rustfmt/pull/2522
+
+# https://github.com/rust-lang/rustfmt/issues/2426
+# Rustfmt formats programs rather than files. If you format lib.rs/main.rs, it will format all files in the library/application.
+# rustfmt --check --config-path . ./src/lib.rs

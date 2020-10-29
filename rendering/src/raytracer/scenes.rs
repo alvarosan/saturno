@@ -1,5 +1,7 @@
 use crate::raytracer::actor::RayTraceable;
 use crate::raytracer::actor::Sphere;
+use crate::raytracer::camera::Camera;
+use crate::raytracer::canvas::Canvas;
 use crate::raytracer::common::Vec4;
 use crate::raytracer::material::Dielectric;
 use crate::raytracer::material::Lambertian;
@@ -138,4 +140,38 @@ pub fn two_spheres_normals() -> Vec<Box<dyn RayTraceable>> {
     }) as Box<dyn RayTraceable>);
 
     actors
+}
+
+pub fn get_renderer(scene_id: u32) -> Box<Canvas> {
+    let dims: [u32; 2] = [200, 133];
+    let actors: Vec<Box<dyn RayTraceable>>;
+    let camera: Camera;
+    match scene_id {
+        0 => {
+            actors = random_book_cover();
+            camera = Camera::new(
+                20.0,
+                dims[0],
+                dims[1],
+                arr1(&[13.0, 2.0, 3.0, 1.0]),
+                arr1(&[0.0, 0.0, 0.0, 1.0]),
+                arr1(&[0.0, 1.0, 0.0, 0.0]),
+                0.2,
+            );
+        }
+        _ => {
+            actors = two_spheres_normals();
+            camera = Camera::new(
+                90.0,
+                dims[0],
+                dims[1],
+                arr1(&[0.0, 0.0, 0.0, 1.0]),
+                arr1(&[0.0, 0.0, -1.0, 1.0]),
+                arr1(&[0.0, 1.0, 0.0, 0.0]),
+                0.0,
+            );
+        }
+    }
+
+    Box::new(Canvas::new(dims[0], dims[1], actors, 2, camera))
 }
