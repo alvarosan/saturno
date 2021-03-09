@@ -1,15 +1,13 @@
-use std::mem;
 use ndarray::{arr1, Array1, ArrayView1};
+use std::mem;
 
 pub struct Vec4 {
     data: Array1<f64>,
 }
 
 impl Vec4 {
-    pub fn new (data: Array1<f64>) -> Vec4 {
-        Vec4 {
-            data
-        }
+    pub fn new(data: Array1<f64>) -> Vec4 {
+        Vec4 { data }
     }
 
     pub fn x(&self) -> f64 {
@@ -92,7 +90,6 @@ impl Ray {
     }
 }
 
-
 pub struct AABB {
     pub min: Array1<f64>,
     pub max: Array1<f64>,
@@ -100,18 +97,15 @@ pub struct AABB {
 
 impl AABB {
     pub fn new(min: Array1<f64>, max: Array1<f64>) -> AABB {
-        AABB {
-            min,
-            max,
-        }
+        AABB { min, max }
     }
 
     pub fn min(&self) -> Array1<f64> {
-      self.min.clone()
+        self.min.clone()
     }
 
     pub fn max(&self) -> Array1<f64> {
-      self.max.clone()
+        self.max.clone()
     }
 
     pub fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> bool {
@@ -133,5 +127,61 @@ impl AABB {
         }
 
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn point_at_parameter() {
+        let ray =
+            Ray::new(arr1(&[0.5, 0.6, 0.7, 1.0]), arr1(&[1.0, 1.0, 1.0, 0.0]));
+
+        assert_eq!(ray.origin[2], 0.7);
+
+        let point = ray.point_at_parameter(3.0);
+
+        assert_eq!(point[0], 3.5);
+        assert_eq!(point[1], 3.6);
+        assert_eq!(point[2], 3.7);
+    }
+
+    #[test]
+    fn hit_aabb() {
+        let aabb = AABB::new(arr1(&[0.0, 0.0, 0.0]), arr1(&[1.0, 1.0, 1.0]));
+
+        let negz = Ray::new(
+            arr1(&[0.0, 0.0, -1.0, 1.0]),
+            arr1(&[0.0, 0.0, -1.0, 0.0]),
+        );
+        assert!(!aabb.hit(&negz, 0.0, 10.0));
+
+        let short = Ray::new(
+            arr1(&[0.0, 0.0, -1.0, 1.0]),
+            arr1(&[0.0, 0.0, -0.5, 0.0]),
+        );
+        assert!(!aabb.hit(&short, 0.0, 10.0));
+
+        let tangent_mid =
+            Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, 0.5, 0.0]));
+        assert!(aabb.hit(&tangent_mid, 0.0, 10.0));
+
+        let tangent_cross =
+            Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, 1.5, 0.0]));
+        assert!(aabb.hit(&tangent_cross, 0.0, 10.0));
+
+        let cross =
+            Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[1.5, 1.5, 1.0, 0.0]));
+        assert!(aabb.hit(&cross, 0.0, 10.0));
+
+        let side =
+            Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[1.5, 1.5, 0.0, 0.0]));
+        assert!(!aabb.hit(&side, 0.0, 10.0));
+
+        let negz_cross =
+            Ray::new(arr1(&[0.0, 0.0, 2.0, 1.0]), arr1(&[1.0, 0.5, -2.0, 0.0]));
+        assert!(aabb.hit(&negz_cross, 0.0, 10.0));
     }
 }

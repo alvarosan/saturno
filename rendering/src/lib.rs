@@ -6,8 +6,8 @@ mod tests {
     use crate::raytracer::actor::Sphere;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::canvas::Canvas;
-    use crate::raytracer::common::AABB;
     use crate::raytracer::common::Ray;
+    use crate::raytracer::common::AABB;
     use crate::raytracer::common_testing::init_image_testing;
     use crate::raytracer::material::Dielectric;
     use crate::raytracer::material::Lambertian;
@@ -19,45 +19,6 @@ mod tests {
 
     extern crate image;
     use image::RgbaImage;
-
-    #[test]
-    fn point_at_parameter() {
-        let ray = Ray::new(arr1(&[0.5, 0.6, 0.7, 1.0]), arr1(&[1.0, 1.0, 1.0, 0.0]));
-
-        assert_eq!(ray.origin[2], 0.7);
-
-        let point = ray.point_at_parameter(3.0);
-
-        assert_eq!(point[0], 3.5);
-        assert_eq!(point[1], 3.6);
-        assert_eq!(point[2], 3.7);
-    }
-
-    #[test]
-    fn hit_aabb() {
-        let aabb = AABB::new(arr1(&[0.0, 0.0, 0.0]), arr1(&[1.0, 1.0, 1.0]));
-
-        let negz = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, -1.0, 0.0]));
-        assert!(!aabb.hit(&negz, 0.0, 10.0));
-        
-        let short = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, -0.5, 0.0]));
-        assert!(!aabb.hit(&short, 0.0, 10.0));
-        
-        let tangent_mid = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, 0.5, 0.0]));
-        assert!(aabb.hit(&tangent_mid, 0.0, 10.0));
-        
-        let tangent_cross = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[0.0, 0.0, 1.5, 0.0]));
-        assert!(aabb.hit(&tangent_cross, 0.0, 10.0));
-
-        let cross = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[1.5, 1.5, 1.0, 0.0]));
-        assert!(aabb.hit(&cross, 0.0, 10.0));
-        
-        let side = Ray::new(arr1(&[0.0, 0.0, -1.0, 1.0]), arr1(&[1.5, 1.5, 0.0, 0.0]));
-        assert!(!aabb.hit(&side, 0.0, 10.0));
-        
-        let negz_cross = Ray::new(arr1(&[0.0, 0.0, 2.0, 1.0]), arr1(&[1.0, 0.5, -2.0, 0.0]));
-        assert!(aabb.hit(&negz_cross, 0.0, 10.0));
-    }
 
     #[test]
     fn render_background() {
