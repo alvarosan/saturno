@@ -1,3 +1,4 @@
+use std::mem;
 use ndarray::{arr1, Array1, ArrayView1};
 
 pub struct Vec4 {
@@ -5,6 +6,12 @@ pub struct Vec4 {
 }
 
 impl Vec4 {
+    pub fn new (data: Array1<f64>) -> Vec4 {
+        Vec4 {
+            data
+        }
+    }
+
     pub fn x(&self) -> f64 {
         self.data[0]
     }
@@ -28,6 +35,10 @@ impl Vec4 {
     }
     pub fn a(&self) -> f64 {
         self.data[3]
+    }
+
+    pub fn data(self) -> Array1<f64> {
+        self.data
     }
 
     pub fn normalized(&self) -> Vec4 {
@@ -78,5 +89,49 @@ impl Ray {
 
     pub fn point_at_parameter(&self, t: f64) -> Array1<f64> {
         self.origin.clone() + t * self.direction.clone()
+    }
+}
+
+
+pub struct AABB {
+    pub min: Array1<f64>,
+    pub max: Array1<f64>,
+}
+
+impl AABB {
+    pub fn new(min: Array1<f64>, max: Array1<f64>) -> AABB {
+        AABB {
+            min,
+            max,
+        }
+    }
+
+    pub fn min(&self) -> Array1<f64> {
+      self.min.clone()
+    }
+
+    pub fn max(&self) -> Array1<f64> {
+      self.max.clone()
+    }
+
+    pub fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> bool {
+        for index in 0..3 {
+            let inv_dist: f64 = 1.0 / ray.direction[index];
+            let mut t0: f64 = (self.min[index] - ray.origin[index]) * inv_dist;
+            let mut t1: f64 = (self.max[index] - ray.origin[index]) * inv_dist;
+
+            if inv_dist < 0.0 {
+                mem::swap(&mut t0, &mut t1);
+            }
+
+            let tmin: f64 = if t0 > tmin { t0 } else { tmin };
+            let tmax: f64 = if t1 < tmax { t1 } else { tmax };
+
+            if tmax <= tmin {
+                return false;
+            }
+        }
+
+        true
     }
 }
