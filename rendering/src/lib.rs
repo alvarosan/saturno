@@ -6,8 +6,6 @@ mod tests {
     use crate::raytracer::actor::Sphere;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::canvas::Canvas;
-    use crate::raytracer::common::Ray;
-    use crate::raytracer::common::AABB;
     use crate::raytracer::common_testing::init_image_testing;
     use crate::raytracer::material::Dielectric;
     use crate::raytracer::material::Lambertian;
