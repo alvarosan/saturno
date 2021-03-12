@@ -4,10 +4,6 @@ RENDERING_DIR=./rendering
 RENDERINGWASM_DIR=./rendering_wasm
 RENDERINGWASM_LIB=./rendering_wasm/target/release/librendering_wasm.rlib
 
-FRONTEND_DIR=./frontend
-RENDERINGNPM_MOD=${FRONTEND_DIR}/node_modules/rendering_wasm
-FRONTEND_BUILD=${FRONTEND_DIR}/dist
-
 SERVER_DIR=./server
 SERVER_BUILD=${SERVER_DIR}/target/release/server
 SUPERBUILD=./build
@@ -23,17 +19,12 @@ endef
 
 all: build
 
-build:  ${FRONTEND_BUILD} ${SERVER_BUILD}
+build: ${SERVER_BUILD} ${RENDERINGWASM_LIB}
 
 
 ${RENDERINGWASM_LIB}:
 	$(call print_status, Build wasm wrapper ...)
 	cd ${RENDERINGWASM_DIR} && wasm-pack build
-
-${FRONTEND_BUILD}: ${RENDERINGWASM_LIB}
-	$(call print_status, Build frontend ...)
-	cd ${FRONTEND_DIR} && npm install
-	cd ${FRONTEND_DIR} && npm run prod
 
 ${SERVER_BUILD}:
 	$(call print_status, Build server ...)
@@ -43,14 +34,10 @@ ${SUPERBUILD}: ${SERVER_BUILD}
 	$(call print_status, Creating build directory ...)
 	mkdir ${SUPERBUILD}
 	cp ${SERVER_BUILD} ${SUPERBUILD}
-	cp -r ${FRONTEND_BUILD} ${SUPERBUILD}
 
 clean-frontend: 
-	$(call print_status, Cleaning up frontend ...)
+	$(call print_status, Cleaning up frontend [wasm] ...)
 	cd ${RENDERINGWASM_DIR} && cargo clean
-	rm -rf ${RENDERINGNPM_MOD}
-	rm -rf ${FRONTEND_DIR}/node_modules
-	rm -rf ${FRONTEND_BUILD}
 	rm -rf ${SUPERBUILD}
 
 clean-server:
@@ -59,5 +46,5 @@ clean-server:
 	rm -rf ${RENDERINGWASM_DIR}/pkg
 	cd ${SERVER_DIR} && cargo clean
 
-clean: clean-frontend clean-server
+clean: clean-server
 	$(call print_status, Full clean up ...)
