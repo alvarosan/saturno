@@ -4,6 +4,8 @@ use crate::raytracer::material::Lambertian;
 use crate::raytracer::material::Scattering;
 use crate::raytracer::material::Shading;
 use ndarray::{arr1, Array1};
+///use std::cmp::min;
+
 
 pub struct Hit {
     pub t: f64,
@@ -207,7 +209,21 @@ impl Hittable for HittableList {
         hit_anything
     }
 
-    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<AABB> {
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
+        if self.actors().len() < 1:
+            None
+
+        let result = self.actors()[0]->bounding_box(t0, t1); 
+        match result {
+            Some(aabb) => {
+                // continue ?
+                for i in 1..=self.actors().len() - 1 {
+                    self.actors()[i]->bounding_box(t0, t1)
+                }
+            }
+            None => return None,
+        }
+
         None
     }
 }
@@ -235,6 +251,22 @@ impl Hittable for BVHNode {
     fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<AABB> {
         None
     }
+}
+
+/**
+ * Computes an AABB surrounding the two input AABBs.
+ */
+fn surrounding_box(box_a: AABB, box_b: AABB) -> AABB {
+
+    let min = arr1(&[box_a.min()[0].min(box_b.min()[0]),
+        box_a.min()[1].min(box_b.min()[1]),
+        box_a.min()[2].min(box_b.min()[2]), 1.0]);
+
+    let max = arr1(&[box_a.max()[0].max(box_b.max()[0]),
+        box_a.max()[1].max(box_b.max()[1]),
+        box_a.max()[2].max(box_b.max()[2]), 1.0]);
+
+    AABB::new(min, max)
 }
 
 
@@ -288,5 +320,25 @@ mod tests {
             }
             None => assert!(false),
         }
+    }
+
+    #[test]
+    fn aabb_surrounding() {
+        let material =
+            Box::new(Primary::new(arr1(&[1.0, 0.0, 0.0, 1.0]), Shading::COLOR));
+        let sphere_1 = Sphere::new(arr1(&[1.0, 1.0, 1.0, 1.0]), 0.5, material);
+        
+        let material =
+            Box::new(Primary::new(arr1(&[1.0, 0.0, 0.0, 1.0]), Shading::COLOR));
+        let sphere_2 = Sphere::new(arr1(&[0.0, 0.0, 0.0, 1.0]), 0.5, material);
+
+        let aabb_surr = surrounding_box(sphere_1.bounding_box(0.0, 0.0).unwrap(),
+            sphere_2.bounding_box(0.0, 0.0).unwrap());
+
+        let min: Array1<f64> = aabb_surr.min();
+        let max: Array1<f64> = aabb_surr.max();
+                
+        assert!(min == arr1(&[-0.5, -0.5, -0.5, 1.0]));
+        assert!(max == arr1(&[1.5, 1.5, 1.5, 1.0]));
     }
 }
