@@ -140,8 +140,10 @@ mod tests {
 
     #[test]
     fn point_at_parameter() {
-        let ray =
-            Ray::new(arr1(&[0.5, 0.6, 0.7, 1.0]), arr1(&[1.0, 1.0, 1.0, 0.0]));
+        let ray = Ray {
+                origin: arr1(&[0.5, 0.6, 0.7, 1.0]),
+                direction: arr1(&[1.0, 1.0, 1.0, 0.0]),
+        };
 
         assert_eq!(ray.origin[2], 0.7);
 

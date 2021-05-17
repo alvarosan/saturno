@@ -210,21 +210,26 @@ impl Hittable for HittableList {
     }
 
     fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
-        if self.actors().len() < 1:
-            None
-
-        let result = self.actors()[0]->bounding_box(t0, t1); 
-        match result {
-            Some(aabb) => {
-                // continue ?
-                for i in 1..=self.actors().len() - 1 {
-                    self.actors()[i]->bounding_box(t0, t1)
-                }
-            }
-            None => return None,
+        if self.actors.len() < 1 {
+            return None;
         }
 
-        None
+        let mut result: AABB = match self.actors[0].bounding_box(t0, t1) {
+            Some(aabb) => aabb,
+            _ => { return None; }
+        };
+
+        let index: usize = 1;
+        while index < self.actors.len() {
+            let next_aabb = match self.actors[index].bounding_box(t0, t1) {
+                Some(aabb) => aabb,
+                _ => { return None; }
+            };
+
+            result = surrounding_box(next_aabb, result);
+        }
+
+        Some(result)
     }
 }
 
