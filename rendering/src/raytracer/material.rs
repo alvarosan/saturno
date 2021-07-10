@@ -374,6 +374,7 @@ impl Scattering for Dielectric {
         }
 
         let mut rng = rand::thread_rng();
+        rng.fill(&mut [1; 1]);
         if rng.gen_range(0.0, 1.0) < reflect_prob {
             *scattered = reflected;
         }

@@ -149,7 +149,7 @@ pub mod canvas {
             x: u32,
             y: u32,
         ) -> Array1<f64> {
-            let mut random_gen = rand::thread_rng();
+            let mut rng = rand::thread_rng();
 
             // TODO review why the statement below produces weird results...
             // for i in 0..=number_samples {
@@ -158,8 +158,8 @@ pub mod canvas {
                 let mut y_final = y as f64;
 
                 if sample > 0 {
-                    x_final = x as f64 + random_gen.gen_range(0.0, 0.999999);
-                    y_final = y as f64 + random_gen.gen_range(0.0, 0.999999);
+                    x_final = x as f64 + rng.gen_range(0.0, 0.999999);
+                    y_final = y as f64 + rng.gen_range(0.0, 0.999999);
                 }
 
                 let ray = self.camera.get_ray(x_final, y_final);

@@ -8,7 +8,8 @@ use crate::raytracer::material::Lambertian;
 use crate::raytracer::material::Metal;
 use crate::raytracer::material::Shading;
 use ndarray::arr1;
-use rand::Rng;
+use rand::prelude::*;
+use rand_pcg::Pcg64; 
 
 pub fn random_book_cover() -> Vec<Box<dyn RayTraceable>> {
     let mut actors: Vec<Box<dyn RayTraceable>> = Vec::with_capacity(1000);
@@ -23,7 +24,7 @@ pub fn random_book_cover() -> Vec<Box<dyn RayTraceable>> {
         )),
     }) as Box<dyn RayTraceable>);
 
-    let mut rng = rand::thread_rng();
+    let mut rng = Pcg64::seed_from_u64(1 as u64);
     let max = 10;
     for a in -max..max {
         for b in -max..max {
