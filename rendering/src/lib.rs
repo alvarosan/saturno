@@ -43,7 +43,7 @@ mod tests {
         assert_eq!(1.0, 1.0);
 
         let test_image = canvas.grab_frame();
-        equals_to_baseline(test_image, output_path);
+        equals_to_baseline(test_image, output_path, 0.0);
     }
 
     #[test]
@@ -197,7 +197,7 @@ mod tests {
         assert_eq!(1.0, 1.0);
         
         let test_image = canvas.grab_frame();
-        equals_to_baseline(test_image, output_path);
+        equals_to_baseline(test_image, output_path, 0.0);
     }
 
     #[test]
@@ -637,6 +637,6 @@ mod tests {
         assert_eq!(1.0, 1.0);
         
         let test_image = canvas.grab_frame();
-        equals_to_baseline(test_image, output_path);
+        equals_to_baseline(test_image, output_path, 80.0);
     }
 }
