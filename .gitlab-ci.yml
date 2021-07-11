@@ -1,0 +1,23 @@
+image: rust:1.50
+
+stages:
+  - code-style
+  # - build  # Server image build
+  - testing
+
+
+code-style:
+  stage: code-style
+  before_script:
+    - rustup component add rustfmt
+  script:
+    - rustfmt --check --config-path . ./server/src/main.rs
+    - rustfmt --check --config-path . ./rendering/src/lib.rs 
+    - rustfmt --check --config-path . ./rendering_wasm/src/lib.rs
+
+
+test-rendering:
+  stage: testing
+  script:
+    - cd rendering
+    - cargo test --release --verbose

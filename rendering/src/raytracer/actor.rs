@@ -6,7 +6,6 @@ use crate::raytracer::material::Shading;
 use ndarray::{arr1, Array1};
 ///use std::cmp::min;
 
-
 pub struct Hit {
     pub t: f64,
     pub point: Array1<f64>,
@@ -216,14 +215,18 @@ impl Hittable for HittableList {
 
         let mut result: AABB = match self.actors[0].bounding_box(t0, t1) {
             Some(aabb) => aabb,
-            _ => { return None; }
+            _ => {
+                return None;
+            }
         };
 
         let index: usize = 1;
         while index < self.actors.len() {
             let next_aabb = match self.actors[index].bounding_box(t0, t1) {
                 Some(aabb) => aabb,
-                _ => { return None; }
+                _ => {
+                    return None;
+                }
             };
 
             result = surrounding_box(next_aabb, result);
@@ -262,18 +265,22 @@ impl Hittable for BVHNode {
  * Computes an AABB surrounding the two input AABBs.
  */
 fn surrounding_box(box_a: AABB, box_b: AABB) -> AABB {
-
-    let min = arr1(&[box_a.min()[0].min(box_b.min()[0]),
+    let min = arr1(&[
+        box_a.min()[0].min(box_b.min()[0]),
         box_a.min()[1].min(box_b.min()[1]),
-        box_a.min()[2].min(box_b.min()[2]), 1.0]);
+        box_a.min()[2].min(box_b.min()[2]),
+        1.0,
+    ]);
 
-    let max = arr1(&[box_a.max()[0].max(box_b.max()[0]),
+    let max = arr1(&[
+        box_a.max()[0].max(box_b.max()[0]),
         box_a.max()[1].max(box_b.max()[1]),
-        box_a.max()[2].max(box_b.max()[2]), 1.0]);
+        box_a.max()[2].max(box_b.max()[2]),
+        1.0,
+    ]);
 
     AABB::new(min, max)
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tests
@@ -332,17 +339,19 @@ mod tests {
         let material =
             Box::new(Primary::new(arr1(&[1.0, 0.0, 0.0, 1.0]), Shading::COLOR));
         let sphere_1 = Sphere::new(arr1(&[1.0, 1.0, 1.0, 1.0]), 0.5, material);
-        
+
         let material =
             Box::new(Primary::new(arr1(&[1.0, 0.0, 0.0, 1.0]), Shading::COLOR));
         let sphere_2 = Sphere::new(arr1(&[0.0, 0.0, 0.0, 1.0]), 0.5, material);
 
-        let aabb_surr = surrounding_box(sphere_1.bounding_box(0.0, 0.0).unwrap(),
-            sphere_2.bounding_box(0.0, 0.0).unwrap());
+        let aabb_surr = surrounding_box(
+            sphere_1.bounding_box(0.0, 0.0).unwrap(),
+            sphere_2.bounding_box(0.0, 0.0).unwrap(),
+        );
 
         let min: Array1<f64> = aabb_surr.min();
         let max: Array1<f64> = aabb_surr.max();
-                
+
         assert!(min == arr1(&[-0.5, -0.5, -0.5, 1.0]));
         assert!(max == arr1(&[1.5, 1.5, 1.5, 1.0]));
     }

@@ -6,6 +6,7 @@ mod tests {
     use crate::raytracer::actor::Sphere;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::canvas::Canvas;
+    use crate::raytracer::common_testing::equals_to_baseline;
     use crate::raytracer::common_testing::init_image_testing;
     use crate::raytracer::material::Dielectric;
     use crate::raytracer::material::Lambertian;
@@ -38,8 +39,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 0.0);
     }
 
     #[test]
@@ -71,8 +74,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 0.0);
     }
 
     #[test]
@@ -104,8 +109,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 0.0);
     }
 
     #[test]
@@ -146,8 +153,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 2.0);
     }
 
     #[test]
@@ -189,8 +198,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 20.0);
     }
 
     #[test]
@@ -251,8 +262,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 24.0);
     }
 
     #[test]
@@ -296,8 +309,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 39.0);
     }
 
     #[test]
@@ -360,8 +375,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 36.0);
     }
 
     #[test]
@@ -433,8 +450,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 28.0);
     }
 
     #[test]
@@ -516,8 +535,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 28.0);
     }
 
     #[test]
@@ -599,8 +620,10 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 26.0);
     }
 
     #[test]
@@ -626,7 +649,9 @@ mod tests {
         canvas.render_scene_rayon();
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
-        let _result = image_png.save(output_path);
-        assert_eq!(1.0, 1.0);
+        let _result = image_png.save(output_path.clone());
+
+        let test_image = canvas.grab_frame();
+        equals_to_baseline(test_image, output_path, 85.0);
     }
 }
