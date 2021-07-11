@@ -1,13 +1,12 @@
 ## Saturno
 
 An implementation of Peter Shirley's [Ray Tracing in One Weekend][rtiow_book].
-The rendering library has bindings for Web Assembly so it can render client or
-server-side.
+The rendering library has bindings for Web Assembly so it can render client (visit
+the titan repository for a sample implementation) or server-side.
 
 ### Requirements
 
-* node 11.10
-* rust-nightly
+* rust-nightly 1.50 (nightly only required for the rocket server)
 
 ### Build and Run Server
 
