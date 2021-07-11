@@ -49,9 +49,8 @@ pub fn equals_to_baseline(image: Image, path: PathBuf, threshold: f32) {
     let image_diff = RgbaImage::from_raw(image.width, image.height, diff_error.0).unwrap();
     let _result = image_diff.save(diff_path);
 
-    println!("error: {}", diff_error.1);
     let error = diff_error.1;
-    if error > 0.0 {
+    if error > 5.0 {
         let mut message = String::from("Image is too different from Baseline image (error = ");
         message.push_str(error.to_string().as_str());
         message.push_str(" ).");
