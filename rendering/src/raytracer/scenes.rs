@@ -9,7 +9,7 @@ use crate::raytracer::material::Metal;
 use crate::raytracer::material::Shading;
 use ndarray::arr1;
 use rand::prelude::*;
-use rand_pcg::Pcg64; 
+use rand_pcg::Pcg64;
 
 pub fn random_book_cover() -> Vec<Box<dyn RayTraceable>> {
     let mut actors: Vec<Box<dyn RayTraceable>> = Vec::with_capacity(1000);

@@ -6,8 +6,8 @@ mod tests {
     use crate::raytracer::actor::Sphere;
     use crate::raytracer::camera::Camera;
     use crate::raytracer::canvas::Canvas;
-    use crate::raytracer::common_testing::init_image_testing;
     use crate::raytracer::common_testing::equals_to_baseline;
+    use crate::raytracer::common_testing::init_image_testing;
     use crate::raytracer::material::Dielectric;
     use crate::raytracer::material::Lambertian;
     use crate::raytracer::material::Metal;
@@ -75,7 +75,7 @@ mod tests {
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
         let _result = image_png.save(output_path.clone());
-        
+
         let test_image = canvas.grab_frame();
         equals_to_baseline(test_image, output_path, 0.0);
     }
@@ -199,7 +199,7 @@ mod tests {
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
         let _result = image_png.save(output_path.clone());
-        
+
         let test_image = canvas.grab_frame();
         equals_to_baseline(test_image, output_path, 20.0);
     }
@@ -650,7 +650,7 @@ mod tests {
         let image = canvas.grab_frame().as_flat_vec_u8();
         let image_png = RgbaImage::from_raw(dims[0], dims[1], image).unwrap();
         let _result = image_png.save(output_path.clone());
-        
+
         let test_image = canvas.grab_frame();
         equals_to_baseline(test_image, output_path, 85.0);
     }
