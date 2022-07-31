@@ -1,70 +1,42 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
+extern crate image;
 extern crate rendering;
 
-#[macro_use]
-extern crate rocket;
+use actix_cors::Cors;
+use actix_web::middleware::Logger;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use env_logger::Env;
 
-extern crate image;
+pub mod renderer;
+use crate::renderer::render_frame;
 
-use std::path::Path;
-use std::path::PathBuf;
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info"))
+        .init();
 
-use rendering::raytracer::canvas::Canvas;
-use rendering::raytracer::scenes;
+    HttpServer::new(|| {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET"])
+            .allowed_headers(vec!["*"])
+            .max_age(3600);
 
-use rocket::http::ContentType;
-use rocket::response::content::Content;
-use rocket::response::status::NotFound;
-use rocket::response::NamedFile;
-
-pub struct Renderer {
-    canvas: Box<Canvas>,
+        App::new()
+            .wrap(Logger::default())
+            .wrap(cors)
+            .service(health)
+            .service(render_frame)
+    })
+    .bind(("0.0.0.0", 8082))?
+    .run()
+    .await
 }
 
-pub fn create_renderer(scene_id: u32) -> Renderer {
-    let canvas = scenes::get_renderer(scene_id);
-    Renderer { canvas }
-}
-
-#[get("/api/v1/render")]
-fn get_frame() -> Content<Vec<u8>> {
-    let mut renderer = create_renderer(0);
-    renderer.canvas.render_scene();
-    let image = renderer.canvas.grab_frame();
-
-    let mut buffer: Vec<u8> = Vec::new();
-
-    let buf: Vec<u8> = image
-        .data
-        .iter()
-        .flat_map(|pixel| pixel.data.iter())
-        .cloned()
-        .collect();
-    let imagergba =
-        image::RgbaImage::from_raw(image.width, image.height, buf.clone());
-    let image_png = image::DynamicImage::ImageRgba8(imagergba.unwrap());
-
-    let _result =
-        image_png.write_to(&mut buffer, image::ImageOutputFormat::PNG);
-
-    Content(ContentType::PNG, buffer)
-}
+///////////////////////////////////////////////////////////////////////////////
+// Services
+///////////////////////////////////////////////////////////////////////////////
 
 #[get("/health")]
-fn health() -> &'static str {
-    "Ok"
-}
-
-#[get("/<file..>")]
-fn get_file(file: PathBuf) -> Result<NamedFile, NotFound<String>> {
-    let path = Path::new("dist/").join(file);
-
-    NamedFile::open(&path).map_err(|e| NotFound(e.to_string()))
-}
-
-fn main() {
-    rocket::ignite()
-        .mount("/", routes![health, get_frame, get_file])
-        .launch();
+async fn health() -> impl Responder {
+    HttpResponse::Ok().body("Ok")
 }
