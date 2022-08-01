@@ -8,7 +8,7 @@ edition = "2021"
 
 [dependencies]
 rendering = { path = "../rendering" }
-image = "0.22.3"
+image = "0.23.12"
 actix-web = "4"
 actix-cors = "0.6.1"
 log = "0.4.17"
