@@ -1,4 +1,4 @@
-image: rust:1.50
+image: rust:1.61
 
 stages:
   - code-style

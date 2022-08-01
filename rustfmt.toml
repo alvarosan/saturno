@@ -4,8 +4,8 @@
 # More parameters:
 #     * `rustfmt --help=config`
 
+edition="2021"
 max_width=80
-
 ignore = [
 # "./testng/**",
 # "./**/*.png",

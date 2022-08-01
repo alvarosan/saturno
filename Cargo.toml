@@ -1,0 +1,12 @@
+[workspace]
+default-members = [
+    "rendering",
+    "rendering_wasm",
+    "server",
+]
+
+members = [
+    "rendering",
+    "rendering_wasm",
+    "server",
+]

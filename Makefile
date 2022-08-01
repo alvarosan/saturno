@@ -1,12 +1,9 @@
-.PHONY: all build clean clean-frontend
+.PHONY: all build clean
 
-RENDERING_DIR=./rendering
 RENDERINGWASM_DIR=./rendering_wasm
-RENDERINGWASM_LIB=./rendering_wasm/target/release/librendering_wasm.rlib
+RENDERINGWASM_LIB=./rendering_wasm/target/debug/librendering_wasm.so
 
-SERVER_DIR=./server
-SERVER_BUILD=${SERVER_DIR}/target/release/server
-SUPERBUILD=./build
+RENDERING_LIB=./rendering/target/debug/librendering.rlib
 
 define print_status
 	@echo ""
@@ -19,32 +16,20 @@ endef
 
 all: build
 
-build: ${SERVER_BUILD} ${RENDERINGWASM_LIB}
+build: ${RENDERING_LIB} ${RENDERINGWASM_LIB}
 
+${RENDERING_LIB}:
+	$(call print_status, Build rendering ...)
+	cargo build
 
 ${RENDERINGWASM_LIB}:
 	$(call print_status, Build wasm wrapper ...)
 	cd ${RENDERINGWASM_DIR} && wasm-pack build
 
-${SERVER_BUILD}:
-	$(call print_status, Build server ...)
-	cd ${SERVER_DIR} && cargo build --release
+clean-workspace:
+	$(call print_status, Cleaning up cargo workspace ...)
+	cargo clean
+	rm ${RENDERINGWASM_LIB}
 
-${SUPERBUILD}: ${SERVER_BUILD}
-	$(call print_status, Creating build directory ...)
-	mkdir ${SUPERBUILD}
-	cp ${SERVER_BUILD} ${SUPERBUILD}
-
-clean-frontend: 
-	$(call print_status, Cleaning up frontend [wasm] ...)
-	cd ${RENDERINGWASM_DIR} && cargo clean
-	rm -rf ${SUPERBUILD}
-
-clean-server:
-	$(call print_status, Cleaning up server ...)
-	cd ${RENDERING_DIR} && cargo clean
-	rm -rf ${RENDERINGWASM_DIR}/pkg
-	cd ${SERVER_DIR} && cargo clean
-
-clean: clean-server
+clean: clean-workspace
 	$(call print_status, Full clean up ...)
